@@ -1,19 +1,25 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const statusColorMap = {
   quotation: "bg-primary/10 text-primary border-primary/20",
   reserved: "bg-secondary/10 text-secondary border-secondary/20",
   pickup: "bg-warning/10 text-warning border-warning/20",
   returned: "bg-success/10 text-success border-success/20",
-}
+};
 const invoiceStatusColorMap = {
   "fully-invoiced": "bg-success/10 text-success border-success/20",
   "nothing-to-invoice": "bg-muted text-muted-foreground border-muted",
   "to-invoice": "bg-warning/10 text-warning border-warning/20",
-}
+};
 
 export function RentalOrdersTable({
   filteredOrders,
@@ -21,7 +27,7 @@ export function RentalOrdersTable({
   invoiceStatusColors = invoiceStatusColorMap,
 }) {
   return (
-    <div className="bg-background rounded-lg border overflow-x-auto">
+    <div className="bg-background overflow-x-auto rounded-lg border">
       <Table className="min-w-[700px]">
         <TableHeader>
           <TableRow>
@@ -41,7 +47,9 @@ export function RentalOrdersTable({
               <TableCell>
                 <div className="flex items-center space-x-2">
                   <Avatar className="h-6 w-6">
-                    <AvatarFallback className="text-xs">{order.createdBy.charAt(0)}</AvatarFallback>
+                    <AvatarFallback className="text-xs">
+                      {order.createdBy.charAt(0)}
+                    </AvatarFallback>
                   </Avatar>
                   <span>{order.createdBy}</span>
                 </div>
@@ -56,11 +64,13 @@ export function RentalOrdersTable({
                   {order.invoiceStatus.replace("-", " ")}
                 </Badge>
               </TableCell>
-              <TableCell className="text-right font-medium">${order.total}</TableCell>
+              <TableCell className="text-right font-medium">
+                ${order.total}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
     </div>
-  )
+  );
 }

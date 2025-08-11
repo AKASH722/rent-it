@@ -1,9 +1,9 @@
-import { useState } from "react"
-import { Grid2X2, TableProperties } from "lucide-react"
-import { RentalOrdersLegendPopover } from "./RentalOrdersLegendPopover"
-import { ToolbarSort } from "./ToolbarSort"
-import { ToolbarSearch } from "./ToolbarSearch"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { Grid2X2, TableProperties } from "lucide-react";
+import { RentalOrdersLegendPopover } from "./RentalOrdersLegendPopover";
+import { ToolbarSort } from "./ToolbarSort";
+import { ToolbarSearch } from "./ToolbarSearch";
+import { Button } from "@/components/ui/button";
 
 export function RentalOrdersToolbar({
   searchQuery,
@@ -13,27 +13,29 @@ export function RentalOrdersToolbar({
   sortField,
   sortOrder,
   onSortChange,
-  onAddOrder,
-  selectedOrders,
-  onDeleteOrders,
-  onDuplicateOrders,
 }) {
-  const [createOpen, setCreateOpen] = useState(false)
-
   return (
     <>
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-6 w-full">
+      <div className="mb-6 flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-
-          <h1 className="text-xl font-semibold text-foreground hidden md:block">Rental Orders</h1>
+          <h1 className="text-foreground hidden text-xl font-semibold md:block">
+            Rental Orders
+          </h1>
           <RentalOrdersLegendPopover />
         </div>
-        <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto">
-          <ToolbarSearch searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-          <ToolbarSort sortField={sortField} sortOrder={sortOrder} onSortChange={onSortChange} />
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:gap-4">
+          <ToolbarSearch
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+          />
+          <ToolbarSort
+            sortField={sortField}
+            sortOrder={sortOrder}
+            onSortChange={onSortChange}
+          />
         </div>
       </div>
-      <div className="flex flex-wrap items-center gap-2 mb-4">
+      <div className="mb-4 flex flex-wrap items-center gap-2">
         <Button
           variant={viewMode === "grid" ? "default" : "outline"}
           size="sm"
@@ -50,5 +52,5 @@ export function RentalOrdersToolbar({
         </Button>
       </div>
     </>
-  )
+  );
 }
