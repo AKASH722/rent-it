@@ -25,74 +25,86 @@ const ProductGrid = ({
 
               {/* Product Info */}
               <div className="flex-1 ml-4">
+                {/* Title only for both mobile and desktop */}
                 <h3 className="font-medium text-foreground">{product.name}</h3>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="inline-block px-2 py-1 text-xs font-medium bg-primary/10 text-primary rounded-lg">
-                    {product.category}
-                  </span>
-                </div>
                 
                 {isMobile ? (
-                  <div className="mt-2 flex items-center justify-between">
-                    <span className="text-lg font-semibold text-foreground">₹{product.price}</span>
-                    <div className="flex items-center gap-3">
-                      {onQuantityChange && (
-                        <div className="flex items-center border border-border rounded-lg overflow-hidden shadow-sm">
-                          <button 
-                            onClick={() => onQuantityChange(product.id, (product.quantity || 1) - 1)}
-                            className="p-2 hover:bg-muted transition-colors duration-150 active:bg-muted"
-                          >
-                            <Minus className="w-4 h-4" />
-                          </button>
-                          <span className="px-4 py-2 text-sm font-medium bg-muted">{product.quantity || 1}</span>
-                          <button 
-                            onClick={() => onQuantityChange(product.id, (product.quantity || 1) + 1)}
-                            className="p-2 hover:bg-muted transition-colors duration-150 active:bg-muted"
-                          >
-                            <Plus className="w-4 h-4" />
-                          </button>
-                        </div>
-                      )}
+                  <>
+                    {/* Price and Category on same line for mobile */}
+                    <div className="mt-2 flex items-center justify-between gap-2">
+                      <span className="text-lg font-semibold text-foreground">₹{product.price}</span>
+                      <span className="px-2 py-1 text-xs font-medium bg-primary/10 text-primary rounded-lg whitespace-nowrap flex-shrink-0">
+                        {product.category}
+                      </span>
+                    </div>
+                    
+                    {/* Action buttons for mobile */}
+                    <div className="mt-2 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        {onQuantityChange && (
+                          <div className="flex items-center border border-border rounded-lg overflow-hidden shadow-sm">
+                            <button 
+                              onClick={() => onQuantityChange(product.id, (product.quantity || 1) - 1)}
+                              className="p-2 hover:bg-muted transition-colors duration-150 active:bg-muted"
+                            >
+                              <Minus className="w-4 h-4" />
+                            </button>
+                            <span className="px-4 py-2 text-sm font-medium bg-muted">{product.quantity || 1}</span>
+                            <button 
+                              onClick={() => onQuantityChange(product.id, (product.quantity || 1) + 1)}
+                              className="p-2 hover:bg-muted transition-colors duration-150 active:bg-muted"
+                            >
+                              <Plus className="w-4 h-4" />
+                            </button>
+                          </div>
+                        )}
+                        <button
+                          onClick={() => onToggleWishlist(product.id)}
+                          className={`p-2 rounded-full transition-all duration-200 transform hover:scale-110 ${
+                            product.inWishlist ? 'text-red-500 bg-red-50 shadow-md' : 'text-muted-foreground hover:text-red-500 hover:bg-red-50'
+                          }`}
+                        >
+                          <Heart className="w-4 h-4" fill={product.inWishlist ? 'currentColor' : 'none'} />
+                        </button>
+                        <button
+                          onClick={() => onAddToCart(product.id)}
+                          className="p-2 text-primary hover:bg-primary/10 rounded-full transition-all duration-200 transform hover:scale-110 shadow-sm hover:shadow-md"
+                        >
+                          <ShoppingCart className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* Actions for desktop */}
+                    <div className="mt-2 flex items-center gap-4 ">
+                      <button
+                        onClick={() => onAddToCart(product.id)}
+                        className="px-6 py-2 bg-gradient-to-r from-primary to-primary/90 text-primary-foreground rounded-lg hover:from-primary/90 hover:to-primary/80 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                      >
+                        Add to Cart
+                      </button>
                       <button
                         onClick={() => onToggleWishlist(product.id)}
                         className={`p-2 rounded-full transition-all duration-200 transform hover:scale-110 ${
                           product.inWishlist ? 'text-red-500 bg-red-50 shadow-md' : 'text-muted-foreground hover:text-red-500 hover:bg-red-50'
                         }`}
                       >
-                        <Heart className="w-4 h-4" fill={product.inWishlist ? 'currentColor' : 'none'} />
-                      </button>
-                      <button
-                        onClick={() => onAddToCart(product.id)}
-                        className="p-2 text-primary hover:bg-primary/10 rounded-full transition-all duration-200 transform hover:scale-110 shadow-sm hover:shadow-md"
-                      >
-                        <ShoppingCart className="w-4 h-4" />
+                        <Heart className="w-5 h-5 " fill={product.inWishlist ? 'currentColor' : 'none'} />
                       </button>
                     </div>
-                  </div>
-                ) : (
-                  <div className="mt-2 flex items-center gap-4">
-                    <button
-                      onClick={() => onAddToCart(product.id)}
-                      className="px-6 py-2 bg-gradient-to-r from-primary to-primary/90 text-primary-foreground rounded-lg hover:from-primary/90 hover:to-primary/80 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                    >
-                      Add to Cart
-                    </button>
-                    <button
-                      onClick={() => onToggleWishlist(product.id)}
-                      className={`p-2 rounded-full transition-all duration-200 transform hover:scale-110 ${
-                        product.inWishlist ? 'text-red-500 bg-red-50 shadow-md' : 'text-muted-foreground hover:text-red-500 hover:bg-red-50'
-                      }`}
-                    >
-                      <Heart className="w-5 h-5" fill={product.inWishlist ? 'currentColor' : 'none'} />
-                    </button>
-                  </div>
+                  </>
                 )}
               </div>
 
-              {/* Price (Desktop List View) */}
+              {/* Category and Price (Desktop List View) */}
               {!isMobile && (
-                <div className="text-right">
-                  <span className="text-xl font-semibold text-foreground">₹{product.price}</span>
+                <div className="flex flex-col items-end text-right min-w-[140px] gap-2">
+                  <span className="px-2 py-1 text-xs font-medium bg-primary/10 text-primary rounded-lg whitespace-nowrap">
+                    {product.category}
+                  </span>
+                  <span className="text-xl pt-4 font-semibold text-foreground leading-none">₹{product.price}</span>
                 </div>
               )}
             </div>
@@ -123,14 +135,13 @@ const ProductGrid = ({
               <h3 className="font-medium text-foreground mb-2 hover:text-primary transition-colors cursor-pointer">{product.name}</h3>
             </Link>
             
-            {/* Category Tag */}
-            <div className="mb-2">
-              <span className="inline-block px-2 py-1 text-xs font-medium bg-primary/10 text-primary rounded-lg">
+            {/* Price and Category Tag */}
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <span className="text-lg font-bold text-primary">₹{product.price}</span>
+              <span className="px-2 py-1 text-xs font-medium bg-primary/10 text-primary rounded-lg whitespace-nowrap flex-shrink-0">
                 {product.category}
               </span>
             </div>
-            
-            <p className="text-lg font-bold text-primary mb-3">₹{product.price}</p>
             
             <div className="flex items-center justify-between">
               <button

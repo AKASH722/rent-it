@@ -9,9 +9,13 @@ import ProductGrid from '@/features/rental-shop-dashboard/components/product-gri
 import Pagination from '@/components/pagination';
 import MobileBottomNav from '@/components/mobile-bottom-nav';
 import { useResponsive } from '@/hooks/useResponsive';
+import { useCart } from '@/contexts/cart-context';
+import { useToast } from '@/contexts/toast-context';
 
 function HomePage() {
   const { isMobile } = useResponsive();
+  const { addToCart } = useCart();
+  const { addToast } = useToast();
   const [viewMode, setViewMode] = useState('grid');
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -97,7 +101,12 @@ function HomePage() {
   const paginatedProducts = filteredProducts.slice(startIndex, startIndex + itemsPerPage);
 
   const handleAddToCart = (productId) => {
-    console.log('Added to cart:', productId);
+    const product = products.find(p => p.id === productId);
+    if (product) {
+      addToCart(product);
+      addToast(`${product.name} added to cart!`);
+      console.log('Added to cart:', product.name);
+    }
   };
 
   const handleToggleWishlist = (productId) => {

@@ -11,9 +11,12 @@ import {
   Filter,
   ArrowLeft
 } from 'lucide-react';
+import { useCart } from '@/contexts/cart-context';
 
 const Header = ({ isMobile, showMobileHeader = false }) => {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const { getCartItemCount } = useCart();
+  const cartItemCount = getCartItemCount();
 
   if (showMobileHeader) {
     return (
@@ -54,9 +57,11 @@ const Header = ({ isMobile, showMobileHeader = false }) => {
           <div className="flex items-center space-x-4">
             <Link href="/cart" className="relative p-2 text-muted-foreground hover:text-primary transition-colors">
               <ShoppingCart className="w-6 h-6" />
-              <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                3
-              </span>
+              {cartItemCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {cartItemCount}
+                </span>
+              )}
             </Link>
 
             {/* Contact Us Button */}

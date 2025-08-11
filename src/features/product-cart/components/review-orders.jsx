@@ -16,58 +16,29 @@ import Header from '@/components/header';
 import Breadcrumb from '@/components/breadcrumb';
 import { useResponsive } from '@/hooks/useResponsive';
 
-// Sample product data
-const initialProducts = [
-  {
-    id: 1,
-    name: "Wireless Bluetooth Headphones",
-    price: 89.99,
-    quantity: 2,
-    image: "https://images.pexels.com/photos/3394650/pexels-photo-3394650.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=1",
-    isLiked: false
-  },
-  {
-    id: 2,
-    name: "Smartphone Case - Premium Leather",
-    price: 24.99,
-    quantity: 1,
-    image: "https://images.pexels.com/photos/404280/pexels-photo-404280.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=1",
-    isLiked: false
-  },
-  {
-    id: 3,
-    name: "USB-C Fast Charging Cable",
-    price: 15.99,
-    quantity: 3,
-    image: "https://images.pexels.com/photos/163125/phone-old-year-built-1955-163125.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=1",
-    isLiked: false
-  }
-];
-
-function ReviewOrders() {
-  const [products, setProducts] = useState(initialProducts);
+function ReviewOrders({ cartItems = [], onUpdateQuantity, onRemoveProduct }) {
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const { isMobile } = useResponsive();
 
   const updateQuantity = (id, change) => {
-    setProducts(products.map(product => 
-      product.id === id 
-        ? { ...product, quantity: Math.max(1, product.quantity + change) }
-        : product
-    ));
+    const product = cartItems.find(p => p.id === id);
+    if (product && onUpdateQuantity) {
+      const newQuantity = Math.max(1, product.quantity + change);
+      onUpdateQuantity(id, newQuantity);
+    }
   };
 
   const toggleLike = (id) => {
-    setProducts(products.map(product => 
-      product.id === id 
-        ? { ...product, isLiked: !product.isLiked }
-        : product
-    ));
+    // For now, we'll keep this as local state since it's not critical for cart functionality
+    // In a real app, this might be managed in a separate wishlist context
+    console.log('Toggle like for product:', id);
   };
 
   const removeProduct = (id) => {
-    setProducts(products.filter(product => product.id !== id));
+    if (onRemoveProduct) {
+      onRemoveProduct(id);
+    }
   };
 
   const applyCoupon = () => {
@@ -80,14 +51,14 @@ function ReviewOrders() {
     }
   };
 
-  const subTotal = products.reduce((sum, product) => sum + (product.price * product.quantity), 0);
+  const subTotal = cartItems.reduce((sum, product) => sum + (product.price * product.quantity), 0);
   const deliveryCharge = subTotal > 50 ? 0 : 9.99;
   const taxRate = 0.08;
   const taxAmount = subTotal * taxRate;
   const discount = appliedCoupon ? subTotal * appliedCoupon.discount : 0;
   const total = subTotal + deliveryCharge + taxAmount - discount;
 
-  const cartItemCount = products.reduce((sum, product) => sum + product.quantity, 0);
+  const cartItemCount = cartItems.reduce((sum, product) => sum + product.quantity, 0);
 
   return (
     <div className="min-h-screen bg-background">
@@ -113,15 +84,31 @@ function ReviewOrders() {
             </div>
             
             <div className="space-y-6">
-              {products.map((product) => (
+              {cartItems.length === 0 ? (
+                <div className="text-center py-12">
+                  <ShoppingCart className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-foreground mb-2">Your cart is empty</h3>
+                  <p className="text-muted-foreground mb-6">Add some products to your cart to get started.</p>
+                  <Link href="/home" className="bg-primary text-primary-foreground px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors inline-block">
+                    Continue Shopping
+                  </Link>
+                </div>
+              ) : (
+                cartItems.map((product) => (
                 <div key={product.id} className="bg-card rounded-2xl p-6 shadow-lg border border-border hover:shadow-xl transition-all duration-300 group">
                   <div className="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-6">
                     <div className="relative">
-                      <img 
-                        src={product.image} 
-                        alt={product.name}
-                        className="w-full md:w-24 h-48 md:h-24 object-cover rounded-xl bg-muted shadow-md group-hover:scale-105 transition-transform duration-300"
-                      />
+                      {product.image ? (
+                        <img 
+                          src={product.image} 
+                          alt={product.name}
+                          className="w-full md:w-24 h-48 md:h-24 object-cover rounded-xl bg-muted shadow-md group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="w-full md:w-24 h-48 md:h-24 bg-muted rounded-xl flex items-center justify-center shadow-md group-hover:scale-105 transition-transform duration-300">
+                          <span className="text-muted-foreground text-sm">No Image</span>
+                        </div>
+                      )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-xl md:hidden"></div>
                     </div>
                     
@@ -194,7 +181,8 @@ function ReviewOrders() {
                     </div>
                   </div>
                 </div>
-              ))}
+              ))
+              )}
             </div>
           </div>
 

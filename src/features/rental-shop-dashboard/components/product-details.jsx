@@ -10,12 +10,16 @@ import {
   ShoppingCart
 } from 'lucide-react';
 import Header from '@/components/header';
+import { useCart } from '@/contexts/cart-context';
+import { useToast } from '@/contexts/toast-context';
 
 const ProductDetailPage = ({ product }) => {
   const [quantity, setQuantity] = useState(2);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
+  const { addToCart } = useCart();
+  const { addToast } = useToast();
 
   // Default product data if none provided (for standalone usage)
   const defaultProduct = {
@@ -59,7 +63,19 @@ const ProductDetailPage = ({ product }) => {
   };
 
   const handleAddToCart = () => {
-    // Add cart animation or notification here
+    const productToAdd = { 
+      ...currentProduct, 
+      quantity: quantity,
+      fromDate,
+      toDate 
+    };
+    
+    // Add multiple items based on quantity
+    for (let i = 0; i < quantity; i++) {
+      addToCart(currentProduct);
+    }
+    
+    addToast(`${quantity} x ${currentProduct.name} added to cart!`);
     console.log(`Added ${quantity} items to cart`);
   };
 
