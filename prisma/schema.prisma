@@ -15,6 +15,7 @@ enum ROLE {
 enum BOOKING_STATUS {
   QUOTATION
   QUOTATION_SENT
+  QUOTATION_REJECT
   RESERVED
   PICKEDUP
   RETURNED
@@ -118,6 +119,7 @@ model Booking {
   billingAddress   String
   deliveryAddress  String
   actualReturnDate DateTime?
+  quantity         Int?           @default(1)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

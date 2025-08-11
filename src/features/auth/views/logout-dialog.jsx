@@ -13,6 +13,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { signOut } from "next-auth/react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { LogOut } from "lucide-react";
 
 export function LogoutDialog(props) {
   const [open, setOpen] = useState(false);
@@ -30,6 +32,8 @@ export function LogoutDialog(props) {
     setOpen(false);
   };
 
+  const isMobile = useIsMobile();
+
   return (
     <>
       <Button
@@ -38,7 +42,7 @@ export function LogoutDialog(props) {
         onClick={() => setOpen(true)}
         {...props}
       >
-        Log out
+        {isMobile ? <LogOut /> : "Log out"}
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
