@@ -5,15 +5,15 @@ export async function RentalOrders() {
   const bookings = await findBookingsForCurrentUser();
 
   const orders = bookings.map((b) => ({
-    id: b.id,
+    id: String(b.id),
     customer: b.customer?.name || "Unknown",
     createdBy: b.product?.owner?.name || "Unknown",
-    rentalStatus: b.status.toLowerCase(),
+    rentalStatus: b.status?.toLowerCase() || "unknown",
     invoiceStatus:
       b.Invoice?.length > 0 ? "fully-invoiced" : "nothing-to-invoice",
-    total: b.totalPrice,
-    startDate: b.startDate,
-    endDate: b.endDate,
+    total: b.totalPrice ?? 0,
+    startDate: b.startDate?.toISOString?.() || "",
+    endDate: b.endDate?.toISOString?.() || "",
   }));
 
   return <RentalOrdersPage orders={orders} />;

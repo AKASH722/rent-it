@@ -43,7 +43,7 @@ export function RentalOrdersGrid({
               </Badge>
             </div>
             <div className="text-right">
-              <p className="font-semibold">${order.total}</p>
+              <p className="font-semibold">₹{order.total}</p>
             </div>
           </CardContent>
         </Card>

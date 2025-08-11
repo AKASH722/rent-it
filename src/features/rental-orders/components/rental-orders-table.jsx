@@ -65,7 +65,7 @@ export function RentalOrdersTable({
                 </Badge>
               </TableCell>
               <TableCell className="text-right font-medium">
-                ${order.total}
+                ₹{order.total}
               </TableCell>
             </TableRow>
           ))}

@@ -1,5 +1,5 @@
 import { RentalOrders } from "@/features/rental-orders";
 
-export default function Home() {
+export default function Page() {
   return <RentalOrders />;
 }

@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import prisma from "@/lib/prisma";
 
 /**
  * Finds all bookings for products owned by the currently authenticated user.
@@ -17,7 +18,11 @@ export const findBookingsForCurrentUser = async () => {
     },
     orderBy: { startDate: "desc" },
     include: {
-      product: true,
+      product: {
+        include: {
+          owner: true,
+        },
+      },
       customer: true,
       Invoice: true,
       Pickup: true,
