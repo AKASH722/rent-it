@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   Home, 
@@ -11,12 +11,33 @@ import {
   Filter,
   ArrowLeft
 } from 'lucide-react';
-import { useCart } from '@/contexts/cart-context';
+import { cartUtils, wishlistUtils } from '@/features/rental-shop-dashboard/util';
 
 const Header = ({ isMobile, showMobileHeader = false }) => {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
-  const { getCartItemCount } = useCart();
-  const cartItemCount = getCartItemCount();
+  const [cartItemCount, setCartItemCount] = useState(0);
+  const [wishlistItemCount, setWishlistItemCount] = useState(0);
+
+  useEffect(() => {
+    // Initialize counts
+    setCartItemCount(cartUtils.getCartItemCount());
+    setWishlistItemCount(wishlistUtils.getWishlistItemCount());
+
+    // Subscribe to changes
+    const unsubscribeCart = cartUtils.subscribe(() => {
+      setCartItemCount(cartUtils.getCartItemCount());
+    });
+
+    const unsubscribeWishlist = wishlistUtils.subscribe(() => {
+      setWishlistItemCount(wishlistUtils.getWishlistItemCount());
+    });
+
+    // Cleanup subscriptions
+    return () => {
+      unsubscribeCart();
+      unsubscribeWishlist();
+    };
+  }, []);
 
   if (showMobileHeader) {
     return (
@@ -46,15 +67,26 @@ const Header = ({ isMobile, showMobileHeader = false }) => {
             
             {!isMobile && (
               <nav className="flex space-x-6">
-                <Link href="/" className="text-primary font-medium hover:text-primary/80 transition-colors">Home</Link>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors">Rental Shop</a>
-                <a href="#" className="text-muted-foreground hover:text-primary transition-colors">Wishlist</a>
+                <Link href="/Home" className="text-primary font-medium hover:text-primary/80 transition-colors">Home</Link>
+                {/* <a href="#" className="text-muted-foreground hover:text-primary transition-colors">Rental Shop</a> */}
+                <Link href="/wishlist" className="text-muted-foreground hover:text-primary transition-colors">Wishlist</Link>
               </nav>
             )}
           </div>
 
           {/* Right side - User Profile and Cart */}
           <div className="flex items-center space-x-4">
+            {/* Wishlist */}
+            <Link href="/wishlist" className="relative p-2 text-muted-foreground hover:text-primary transition-colors">
+              <Heart className="w-6 h-6" />
+              {wishlistItemCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {wishlistItemCount}
+                </span>
+              )}
+            </Link>
+
+            {/* Cart */}
             <Link href="/cart" className="relative p-2 text-muted-foreground hover:text-primary transition-colors">
               <ShoppingCart className="w-6 h-6" />
               {cartItemCount > 0 && (

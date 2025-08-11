@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Calendar,
@@ -10,16 +10,14 @@ import {
   ShoppingCart
 } from 'lucide-react';
 import Header from '@/components/header';
-import { useCart } from '@/contexts/cart-context';
-import { useToast } from '@/contexts/toast-context';
+import { cartUtils, wishlistUtils } from '@/features/rental-shop-dashboard/util';
+import { toast } from 'sonner';
 
 const ProductDetailPage = ({ product }) => {
   const [quantity, setQuantity] = useState(2);
-  const [isWishlisted, setIsWishlisted] = useState(false);
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
-  const { addToCart } = useCart();
-  const { addToast } = useToast();
+  const [isInWishlist, setIsInWishlist] = useState(false);
 
   // Default product data if none provided (for standalone usage)
   const defaultProduct = {
@@ -54,6 +52,16 @@ const ProductDetailPage = ({ product }) => {
 
   const productData = product || defaultProduct;
 
+  useEffect(() => {
+    setIsInWishlist(wishlistUtils.isInWishlist(productData.id));
+
+    const unsubscribe = wishlistUtils.subscribe(() => {
+      setIsInWishlist(wishlistUtils.isInWishlist(productData.id));
+    });
+
+    return unsubscribe;
+  }, [productData.id]);
+
   const handleQuantityChange = (type) => {
     if (type === 'increment') {
       setQuantity(prev => prev + 1);
@@ -64,7 +72,7 @@ const ProductDetailPage = ({ product }) => {
 
   const handleAddToCart = () => {
     const productToAdd = { 
-      ...currentProduct, 
+      ...productData, 
       quantity: quantity,
       fromDate,
       toDate 
@@ -72,15 +80,21 @@ const ProductDetailPage = ({ product }) => {
     
     // Add multiple items based on quantity
     for (let i = 0; i < quantity; i++) {
-      addToCart(currentProduct);
+      cartUtils.addToCart(productData);
     }
     
-    addToast(`${quantity} x ${currentProduct.name} added to cart!`);
+    toast.success(`${quantity} x ${productData.name} added to cart!`);
     console.log(`Added ${quantity} items to cart`);
   };
 
-  const toggleWishlist = () => {
-    setIsWishlisted(!isWishlisted);
+  const handleToggleWishlist = () => {
+    const wasInWishlist = wishlistUtils.isInWishlist(productData.id);
+    wishlistUtils.toggleWishlist(productData);
+    toast.success(
+      wasInWishlist 
+        ? `${productData.name} removed from wishlist!`
+        : `${productData.name} added to wishlist!`
+    );
   };
 
   return (
@@ -114,16 +128,16 @@ const ProductDetailPage = ({ product }) => {
 
             {/* Add to Wishlist Button */}
             <button
-              onClick={toggleWishlist}
+              onClick={handleToggleWishlist}
               className={`flex items-center space-x-2 px-6 py-3 rounded-full border-2 transition-all duration-200 w-full sm:w-auto justify-center ${
-                isWishlisted
+                isInWishlist
                   ? 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100'
                   : 'bg-card border-border text-foreground hover:border-red-300 hover:text-red-600'
               }`}
             >
-              <Heart className={`h-5 w-5 ${isWishlisted ? 'fill-current' : ''}`} />
+              <Heart className={`h-5 w-5 ${isInWishlist ? 'fill-current' : ''}`} />
               <span className="font-medium">
-                {isWishlisted ? 'Added to Wishlist' : 'Add to Wishlist'}
+                {isInWishlist ? 'Added to Wishlist' : 'Add to Wishlist'}
               </span>
             </button>
 
@@ -142,9 +156,7 @@ const ProductDetailPage = ({ product }) => {
                   </div>
                 )}
               </div>
-              <button className="text-primary hover:text-primary/80 font-medium mt-4 transition-colors">
-                Read More →
-              </button>
+              
             </div>
           </div>
 

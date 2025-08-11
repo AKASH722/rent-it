@@ -9,13 +9,11 @@ import ProductGrid from '@/features/rental-shop-dashboard/components/product-gri
 import Pagination from '@/components/pagination';
 import MobileBottomNav from '@/components/mobile-bottom-nav';
 import { useResponsive } from '@/hooks/useResponsive';
-import { useCart } from '@/contexts/cart-context';
-import { useToast } from '@/contexts/toast-context';
+import { cartUtils, wishlistUtils } from '@/features/rental-shop-dashboard/util';
+import { toast } from 'sonner';
 
 function HomePage() {
   const { isMobile } = useResponsive();
-  const { addToCart } = useCart();
-  const { addToast } = useToast();
   const [viewMode, setViewMode] = useState('grid');
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -26,73 +24,56 @@ function HomePage() {
   const [selectedColors, setSelectedColors] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All');
 
-  // Sample product data with categories
+  // Sample product data with categories - removed inWishlist as it's now handled by context
   const [products, setProducts] = useState([
-    { id: 1, name: 'Laptop Pro 15"', price: 1200, image: '', inWishlist: false, quantity: 1, category: 'Electronics' },
-    { id: 2, name: 'Gaming Chair', price: 160, image: '', inWishlist: true, quantity: 1, category: 'Furniture' },
-    { id: 3, name: 'Wireless Headphones', price: 200, image: '', inWishlist: false, quantity: 1, category: 'Electronics' },
-    { id: 4, name: 'Coffee Table', price: 89, image: '', inWishlist: false, quantity: 1, category: 'Furniture' },
-    { id: 5, name: 'Smart Watch', price: 250, image: '', inWishlist: true, quantity: 1, category: 'Electronics' },
-    { id: 6, name: 'Bookshelf', price: 180, image: '', inWishlist: false, quantity: 1, category: 'Furniture' },
-    { id: 7, name: 'Bluetooth Speaker', price: 95, image: '', inWishlist: false, quantity: 1, category: 'Electronics' },
-    { id: 8, name: 'Office Desk', price: 300, image: '', inWishlist: false, quantity: 1, category: 'Furniture' },
-    { id: 9, name: 'Running Shoes', price: 150, image: '', inWishlist: true, quantity: 1, category: 'Sports' },
-    { id: 10, name: 'Tennis Racket', price: 75, image: '', inWishlist: false, quantity: 1, category: 'Sports' },
-    { id: 11, name: 'Backpack', price: 220, image: '', inWishlist: false, quantity: 1, category: 'Travel' },
-    { id: 12, name: 'Luggage Set', price: 190, image: '', inWishlist: false, quantity: 1, category: 'Travel' },
-    { id: 13, name: 'Digital Camera', price: 450, image: '', inWishlist: false, quantity: 1, category: 'Electronics' },
-    { id: 14, name: 'Sofa Set', price: 680, image: '', inWishlist: false, quantity: 1, category: 'Furniture' },
-    { id: 15, name: 'Mountain Bike', price: 1200, image: '', inWishlist: false, quantity: 1, category: 'Sports' },
-    { id: 16, name: 'Travel Bag', price: 1800, image: '', inWishlist: false, quantity: 1, category: 'Travel' },
-    { id: 17, name: 'Yoga Mat', price: 2500, image: '', inWishlist: false, quantity: 1, category: 'Sports' },
-    { id: 18, name: 'Camping Tent', price: 3200, image: '', inWishlist: false, quantity: 1, category: 'Travel' },
+    { id: 1, name: 'Laptop Pro 15"', price: 1200, image: '', quantity: 1, category: 'Electronics' },
+    { id: 2, name: 'Gaming Chair', price: 160, image: '', quantity: 1, category: 'Furniture' },
+    { id: 3, name: 'Wireless Headphones', price: 200, image: '', quantity: 1, category: 'Electronics' },
+    { id: 4, name: 'Coffee Table', price: 89, image: '', quantity: 1, category: 'Furniture' },
+    { id: 5, name: 'Smart Watch', price: 250, image: '', quantity: 1, category: 'Electronics' },
+    { id: 6, name: 'Bookshelf', price: 180, image: '', quantity: 1, category: 'Furniture' },
+    { id: 7, name: 'Bluetooth Speaker', price: 95, image: '', quantity: 1, category: 'Electronics' },
+    { id: 8, name: 'Office Desk', price: 300, image: '', quantity: 1, category: 'Furniture' },
+    { id: 9, name: 'Running Shoes', price: 150, image: '', quantity: 1, category: 'Sports' },
+    { id: 10, name: 'Tennis Racket', price: 75, image: '', quantity: 1, category: 'Sports' },
+    { id: 11, name: 'Backpack', price: 220, image: '', quantity: 1, category: 'Travel' },
+    { id: 12, name: 'Luggage Set', price: 190, image: '', quantity: 1, category: 'Travel' },
+    { id: 13, name: 'Digital Camera', price: 450, image: '', quantity: 1, category: 'Electronics' },
+    { id: 14, name: 'Sofa Set', price: 680, image: '', quantity: 1, category: 'Furniture' },
+    { id: 15, name: 'Mountain Bike', price: 1200, image: '', quantity: 1, category: 'Sports' },
+    { id: 16, name: 'Travel Bag', price: 1800, image: '', quantity: 1, category: 'Travel' },
+    { id: 17, name: 'Yoga Mat', price: 2500, image: '', quantity: 1, category: 'Sports' },
+    { id: 18, name: 'Camping Tent', price: 3200, image: '', quantity: 1, category: 'Travel' },
   ]);
 
-  // Filter and sort products
+    // Filter products based on search, category, and price range
   const filteredProducts = useMemo(() => {
-    let filtered = products.filter(product =>
-      product.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    // Apply category filter
-    if (selectedCategory !== 'All') {
-      filtered = filtered.filter(product => product.category === selectedCategory);
-    }
-
-    // Apply price range filter
-    if (selectedPriceRange !== 'all') {
-      const [min, max] = selectedPriceRange.split('-').map(Number);
-      if (selectedPriceRange === '5000+') {
-        filtered = filtered.filter(product => product.price >= 5000);
-      } else {
-        filtered = filtered.filter(product => product.price >= min && product.price <= max);
-      }
-    }
-
-    // Apply sorting
-    switch (sortBy) {
-      case 'price-asc':
-        filtered.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-desc':
-        filtered.sort((a, b) => b.price - a.price);
-        break;
-      case 'name-asc':
-        filtered.sort((a, b) => a.name.localeCompare(b.name));
-        break;
-      case 'name-desc':
-        filtered.sort((a, b) => b.name.localeCompare(a.name));
-        break;
-      case 'newest':
-        filtered.sort((a, b) => b.id - a.id);
-        break;
-      default:
-        // Featured - keep original order
-        break;
-    }
-
-    return filtered;
-  }, [products, searchTerm, selectedPriceRange, sortBy, selectedCategory]);
+    return products
+      .filter(product => 
+        product.name.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      .filter(product => 
+        selectedCategory === 'All' || product.category === selectedCategory
+      )
+      .filter(product => {
+        if (selectedPriceRange === 'all') return true;
+        if (selectedPriceRange === 'under-100') return product.price < 100;
+        if (selectedPriceRange === '100-500') return product.price >= 100 && product.price <= 500;
+        if (selectedPriceRange === '500-1000') return product.price >= 500 && product.price <= 1000;
+        if (selectedPriceRange === 'over-1000') return product.price > 1000;
+        return true;
+      })
+      .map(product => ({
+        ...product,
+        inWishlist: wishlistUtils.isInWishlist(product.id) // Add wishlist status from utils
+      }))
+      .sort((a, b) => {
+        if (sortBy === 'price-low') return a.price - b.price;
+        if (sortBy === 'price-high') return b.price - a.price;
+        if (sortBy === 'name') return a.name.localeCompare(b.name);
+        return 0; // featured - no sorting
+      });
+  }, [products, searchTerm, selectedCategory, selectedPriceRange, sortBy]);
 
   // Pagination
   const itemsPerPage = 8;
@@ -103,18 +84,23 @@ function HomePage() {
   const handleAddToCart = (productId) => {
     const product = products.find(p => p.id === productId);
     if (product) {
-      addToCart(product);
-      addToast(`${product.name} added to cart!`);
+      cartUtils.addToCart(product);
+      toast.success(`${product.name} added to cart!`);
       console.log('Added to cart:', product.name);
     }
   };
 
   const handleToggleWishlist = (productId) => {
-    setProducts(prev => prev.map(product =>
-      product.id === productId
-        ? { ...product, inWishlist: !product.inWishlist }
-        : product
-    ));
+    const product = products.find(p => p.id === productId);
+    if (product) {
+      const wasInWishlist = wishlistUtils.isInWishlist(productId);
+      wishlistUtils.toggleWishlist(product);
+      toast.success(
+        wasInWishlist 
+          ? `${product.name} removed from wishlist!`
+          : `${product.name} added to wishlist!`
+      );
+    }
   };
 
   const handleQuantityChange = (productId, quantity) => {
