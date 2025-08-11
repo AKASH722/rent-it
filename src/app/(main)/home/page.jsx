@@ -20,27 +20,28 @@ function HomePage() {
   const [priceList, setPriceList] = useState('regular');
   const [selectedPriceRange, setSelectedPriceRange] = useState('all');
   const [selectedColors, setSelectedColors] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('All');
 
-  // Sample product data
+  // Sample product data with categories
   const [products, setProducts] = useState([
-    { id: 1, name: 'Product 1', price: 120, image: '', inWishlist: false, quantity: 1 },
-    { id: 2, name: 'Product 2', price: 160, image: '', inWishlist: true, quantity: 1 },
-    { id: 3, name: 'Product 3', price: 200, image: '', inWishlist: false, quantity: 1 },
-    { id: 4, name: 'Product 4', price: 89, image: '', inWishlist: false, quantity: 1 },
-    { id: 5, name: 'Product 5', price: 250, image: '', inWishlist: true, quantity: 1 },
-    { id: 6, name: 'Product 6', price: 180, image: '', inWishlist: false, quantity: 1 },
-    { id: 7, name: 'Product 7', price: 95, image: '', inWishlist: false, quantity: 1 },
-    { id: 8, name: 'Product 8', price: 300, image: '', inWishlist: false, quantity: 1 },
-    { id: 9, name: 'Product 9', price: 150, image: '', inWishlist: true, quantity: 1 },
-    { id: 10, name: 'Product 10', price: 75, image: '', inWishlist: false, quantity: 1 },
-    { id: 11, name: 'Product 11', price: 220, image: '', inWishlist: false, quantity: 1 },
-    { id: 12, name: 'Product 12', price: 190, image: '', inWishlist: false, quantity: 1 },
-    { id: 13, name: 'Product 13', price: 450, image: '', inWishlist: false, quantity: 1 },
-    { id: 14, name: 'Product 14', price: 680, image: '', inWishlist: false, quantity: 1 },
-    { id: 15, name: 'Product 15', price: 1200, image: '', inWishlist: false, quantity: 1 },
-    { id: 16, name: 'Product 16', price: 1800, image: '', inWishlist: false, quantity: 1 },
-    { id: 17, name: 'Product 17', price: 2500, image: '', inWishlist: false, quantity: 1 },
-    { id: 18, name: 'Product 18', price: 3200, image: '', inWishlist: false, quantity: 1 },
+    { id: 1, name: 'Laptop Pro 15"', price: 1200, image: '', inWishlist: false, quantity: 1, category: 'Electronics' },
+    { id: 2, name: 'Gaming Chair', price: 160, image: '', inWishlist: true, quantity: 1, category: 'Furniture' },
+    { id: 3, name: 'Wireless Headphones', price: 200, image: '', inWishlist: false, quantity: 1, category: 'Electronics' },
+    { id: 4, name: 'Coffee Table', price: 89, image: '', inWishlist: false, quantity: 1, category: 'Furniture' },
+    { id: 5, name: 'Smart Watch', price: 250, image: '', inWishlist: true, quantity: 1, category: 'Electronics' },
+    { id: 6, name: 'Bookshelf', price: 180, image: '', inWishlist: false, quantity: 1, category: 'Furniture' },
+    { id: 7, name: 'Bluetooth Speaker', price: 95, image: '', inWishlist: false, quantity: 1, category: 'Electronics' },
+    { id: 8, name: 'Office Desk', price: 300, image: '', inWishlist: false, quantity: 1, category: 'Furniture' },
+    { id: 9, name: 'Running Shoes', price: 150, image: '', inWishlist: true, quantity: 1, category: 'Sports' },
+    { id: 10, name: 'Tennis Racket', price: 75, image: '', inWishlist: false, quantity: 1, category: 'Sports' },
+    { id: 11, name: 'Backpack', price: 220, image: '', inWishlist: false, quantity: 1, category: 'Travel' },
+    { id: 12, name: 'Luggage Set', price: 190, image: '', inWishlist: false, quantity: 1, category: 'Travel' },
+    { id: 13, name: 'Digital Camera', price: 450, image: '', inWishlist: false, quantity: 1, category: 'Electronics' },
+    { id: 14, name: 'Sofa Set', price: 680, image: '', inWishlist: false, quantity: 1, category: 'Furniture' },
+    { id: 15, name: 'Mountain Bike', price: 1200, image: '', inWishlist: false, quantity: 1, category: 'Sports' },
+    { id: 16, name: 'Travel Bag', price: 1800, image: '', inWishlist: false, quantity: 1, category: 'Travel' },
+    { id: 17, name: 'Yoga Mat', price: 2500, image: '', inWishlist: false, quantity: 1, category: 'Sports' },
+    { id: 18, name: 'Camping Tent', price: 3200, image: '', inWishlist: false, quantity: 1, category: 'Travel' },
   ]);
 
   // Filter and sort products
@@ -48,6 +49,11 @@ function HomePage() {
     let filtered = products.filter(product =>
       product.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    // Apply category filter
+    if (selectedCategory !== 'All') {
+      filtered = filtered.filter(product => product.category === selectedCategory);
+    }
 
     // Apply price range filter
     if (selectedPriceRange !== 'all') {
@@ -82,7 +88,7 @@ function HomePage() {
     }
 
     return filtered;
-  }, [products, searchTerm, selectedPriceRange, sortBy]);
+  }, [products, searchTerm, selectedPriceRange, sortBy, selectedCategory]);
 
   // Pagination
   const itemsPerPage = 8;
@@ -123,7 +129,13 @@ function HomePage() {
       <Header isMobile={isMobile} showMobileHeader={isMobile} />
       
       {/* Category Bar - Hidden on mobile */}
-      {!isMobile && <CategoryBar />}
+      {!isMobile && (
+        <CategoryBar 
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
+          products={products}
+        />
+      )}
 
       <div className="flex">
         {/* Sidebar - Hidden on mobile */}

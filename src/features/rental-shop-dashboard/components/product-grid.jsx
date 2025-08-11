@@ -26,6 +26,11 @@ const ProductGrid = ({
               {/* Product Info */}
               <div className="flex-1 ml-4">
                 <h3 className="font-medium text-foreground">{product.name}</h3>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="inline-block px-2 py-1 text-xs font-medium bg-primary/10 text-primary rounded-lg">
+                    {product.category}
+                  </span>
+                </div>
                 
                 {isMobile ? (
                   <div className="mt-2 flex items-center justify-between">
@@ -117,6 +122,14 @@ const ProductGrid = ({
             <Link href={`/product/${product.id}`}>
               <h3 className="font-medium text-foreground mb-2 hover:text-primary transition-colors cursor-pointer">{product.name}</h3>
             </Link>
+            
+            {/* Category Tag */}
+            <div className="mb-2">
+              <span className="inline-block px-2 py-1 text-xs font-medium bg-primary/10 text-primary rounded-lg">
+                {product.category}
+              </span>
+            </div>
+            
             <p className="text-lg font-bold text-primary mb-3">₹{product.price}</p>
             
             <div className="flex items-center justify-between">

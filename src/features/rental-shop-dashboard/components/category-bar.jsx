@@ -1,15 +1,11 @@
-import React, { useState } from 'react';
+import React, { useMemo } from 'react';
 
-const CategoryBar = () => {
-  const [activeCategory, setActiveCategory] = useState(0);
-  
-  const categories = [
-    'Category 1',
-    'Category 2', 
-    'Category 3',
-    'Category 4',
-    'Category 5'
-  ];
+const CategoryBar = ({ selectedCategory = 'All', onCategoryChange, products = [] }) => {
+  // Get unique categories from products
+  const categories = useMemo(() => {
+    const uniqueCategories = [...new Set(products.map(product => product.category))];
+    return ['All', ...uniqueCategories.sort()];
+  }, [products]);
 
   return (
     <div className="bg-muted border-b border-border">
@@ -18,9 +14,9 @@ const CategoryBar = () => {
           {categories.map((category, index) => (
             <button
               key={index}
-              onClick={() => setActiveCategory(index)}
+              onClick={() => onCategoryChange(category)}
               className={`px-6 py-3 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-200 transform hover:-translate-y-0.5 ${
-                activeCategory === index
+                selectedCategory === category
                   ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg scale-105'
                   : 'text-muted-foreground hover:text-primary hover:bg-card hover:shadow-md'
               }`}
