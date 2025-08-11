@@ -1,6 +1,8 @@
 import { Poppins, Libre_Baskerville, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
+import { CartProvider } from "@/contexts/cart-context";
+import { ToastProvider } from "@/contexts/toast-context";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -30,8 +32,12 @@ export default function RootLayout({ children }) {
       <body
         className={`${poppins.variable} ${libreBaskerville.variable} ${ibmPlexMono.variable} antialiased`}
       >
-        {children}
-        <Toaster richColors />
+        <ToastProvider>
+          <CartProvider>
+            {children}
+            <Toaster richColors />
+          </CartProvider>
+        </ToastProvider>
       </body>
     </html>
   );
