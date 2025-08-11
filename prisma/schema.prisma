@@ -12,14 +12,198 @@ enum ROLE {
   ENDUSER
 }
 
+enum BOOKING_STATUS {
+  QUOTATION
+  QUOTATION_SENT
+  RESERVED
+  PICKEDUP
+  RETURNED
+}
+
+enum PAYMENT_STATUS {
+  PENDING
+  PAID
+  PARTIAL
+}
+
 model User {
-  id       String  @id @default(cuid())
-  name     String?
-  email    String  @unique
-  phone    String?
-  password String
-  role     ROLE    @default(CUSTOMER)
+  id              String  @id @default(cuid())
+  name            String?
+  email           String  @unique
+  phone           String?
+  password        String
+  role            ROLE    @default(CUSTOMER)
+  billingAddress  String?
+  deliveryAddress String?
+  customerGroupId String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  UserGroup    CustomerGroup? @relation(fields: [customerGroupId], references: [id])
+  Product      Product[]
+  Booking      Booking[]
+  Notification Notification[]
+}
+
+model CustomerGroup {
+  id   String @id @default(cuid())
+  name String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users     User[]
+  PriceList PriceList[]
+}
+
+model Category {
+  id   String @id @default(cuid())
+  name String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products Product[]
+}
+
+model Product {
+  id               String  @id @default(cuid())
+  name             String
+  slug             String
+  description      String
+  units            Int     @default(1)
+  basePricePerHour Float?
+  basePricePerDay  Float?
+  basePricePerWeek Float?
+  LateFeePerHour   Float
+  ownerId          String
+  categoryId       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner            User               @relation(fields: [ownerId], references: [id])
+  category         Category?          @relation(fields: [categoryId], references: [id])
+  PriceList        PriceList[]
+  Booking          Booking[]
+  ProductAttribute ProductAttribute[]
+}
+
+model PriceList {
+  id         String   @id @default(cuid())
+  productId  String
+  name       String
+  startDate  DateTime
+  endDate    DateTime
+  multiplier Float
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product       Product         @relation(fields: [productId], references: [id])
+  customerGroup CustomerGroup[]
+}
+
+model Booking {
+  id               String         @id @default(cuid())
+  customerId       String
+  productId        String
+  startDate        DateTime
+  endDate          DateTime
+  totalPrice       Float
+  status           BOOKING_STATUS @default(QUOTATION)
+  paymentStatus    PAYMENT_STATUS @default(PENDING)
+  billingAddress   String
+  deliveryAddress  String
+  actualReturnDate DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product  Product @relation(fields: [productId], references: [id])
+  customer User    @relation(fields: [customerId], references: [id])
+
+  Invoice      Invoice[]
+  Pickup       Pickup[]
+  ReturnRecord ReturnRecord[]
+  Payment      Payment[]
+}
+
+model Invoice {
+  id          String   @id @default(cuid())
+  bookingId   String
+  totalAmount Float
+  paidAmount  Float
+  dueAmount   Float
+  invoiceUrl  String
+  issueDate   DateTime @default(now())
+  dueDate     DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+}
+
+model Pickup {
+  id          String    @id @default(cuid())
+  bookingId   String
+  address     String
+  scheduledAt DateTime
+  completedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+}
+
+model ReturnRecord {
+  id         String   @id @default(cuid())
+  bookingId  String
+  returnedAt DateTime
+  lateFee    Float    @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+}
+
+model Payment {
+  id            String         @id @default(cuid())
+  bookingId     String
+  amount        Float
+  status        PAYMENT_STATUS @default(PENDING)
+  orderId       String
+  transactionId String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+}
+
+model Notification {
+  id      String   @id @default(cuid())
+  userId  String
+  message String
+  sentAt  DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model ProductAttribute {
+  id        String @id @default(cuid())
+  productId String
+  key       String
+  value     String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id])
 }
