@@ -1,8 +1,7 @@
-import { useState } from "react";
 import { Grid2X2, TableProperties } from "lucide-react";
-import { RentalOrdersLegendPopover } from "./RentalOrdersLegendPopover";
-import { ToolbarSort } from "./ToolbarSort";
-import { ToolbarSearch } from "./ToolbarSearch";
+import { RentalOrdersLegend } from "./rental-orders-legend";
+import { ToolbarSort } from "./toolbar-sort";
+import { ToolbarSearch } from "./toolbar-search";
 import { Button } from "@/components/ui/button";
 
 export function RentalOrdersToolbar({
@@ -21,7 +20,7 @@ export function RentalOrdersToolbar({
           <h1 className="text-foreground hidden text-xl font-semibold md:block">
             Rental Orders
           </h1>
-          <RentalOrdersLegendPopover />
+          <RentalOrdersLegend />
         </div>
         <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:gap-4">
           <ToolbarSearch

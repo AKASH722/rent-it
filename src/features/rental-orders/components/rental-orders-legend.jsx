@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export function RentalOrdersLegendPopover() {
+export function RentalOrdersLegend() {
   const [show, setShow] = useState(false);
   return (
     <div className="relative inline-block">

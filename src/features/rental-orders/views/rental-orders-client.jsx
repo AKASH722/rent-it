@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { RentalStatusSidebar } from "../components/RentalStatusSidebar";
-import { RentalOrdersToolbar } from "../components/RentalOrdersToolbar";
-import { RentalOrdersGrid } from "../components/RentalOrdersGrid";
-import { RentalOrdersTable } from "../components/RentalOrdersTable";
+import { RentalStatusSidebar } from "../components/rental-status-sidebar";
+import { RentalOrdersToolbar } from "../components/rental-orders-toolbar";
+import { RentalOrdersGrid } from "../components/rental-orders-grid";
+import { RentalOrdersTable } from "../components/rental-orders-table";
 
 const statusColors = {
   quotation: "bg-blue-100 text-blue-800 border-blue-200",

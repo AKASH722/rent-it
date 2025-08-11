@@ -1,18 +1,17 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 const statusColorMap = {
   quotation: "bg-primary/10 text-primary border-primary/20",
   reserved: "bg-secondary/10 text-secondary border-secondary/20",
   pickup: "bg-warning/10 text-warning border-warning/20",
   returned: "bg-success/10 text-success border-success/20",
-}
+};
 const invoiceStatusColorMap = {
   "fully-invoiced": "bg-success/10 text-success border-success/20",
   "nothing-to-invoice": "bg-muted text-muted-foreground border-muted",
   "to-invoice": "bg-warning/10 text-warning border-warning/20",
-}
+};
 
 export function RentalOrdersGrid({
   filteredOrders,
@@ -20,18 +19,20 @@ export function RentalOrdersGrid({
   invoiceStatusColors = invoiceStatusColorMap,
 }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {filteredOrders.map((order) => (
-        <Card key={order.id} className="hover:shadow-md transition-shadow">
+        <Card key={order.id} className="transition-shadow hover:shadow-md">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <span className="font-medium text-sm">{order.id}</span>
+              <span className="text-sm font-medium">{order.id}</span>
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
             <div>
               <p className="text-sm font-medium">{order.customer}</p>
-              <p className="text-xs text-muted-foreground">Created by {order.createdBy}</p>
+              <p className="text-muted-foreground text-xs">
+                Created by {order.createdBy}
+              </p>
             </div>
             <div className="space-y-2">
               <Badge className={statusColors[order.rentalStatus]}>
@@ -48,5 +49,5 @@ export function RentalOrdersGrid({
         </Card>
       ))}
     </div>
-  )
+  );
 }
