@@ -10,6 +10,7 @@ import {
   Home,
   MessageCircle,
   Search,
+  ClipboardList,
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { LogoutDialog } from "@/features/auth";
@@ -64,6 +65,19 @@ const Header = () => {
               >
                 Dashboard
               </Link>
+
+              <Link
+                href="/booking"
+                className={`flex items-center gap-1 transition-colors ${
+                  isActive("/bookings")
+                    ? "text-primary"
+                    : "text-muted-foreground hover:text-primary"
+                }`}
+              >
+                <ClipboardList className="h-5 w-5" />
+                Bookings
+              </Link>
+
               <Link
                 href="/wishlist"
                 className={`flex items-center gap-1 transition-colors ${

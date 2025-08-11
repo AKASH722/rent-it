@@ -2,16 +2,21 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Heart, Home, LogOut, ShoppingCart } from "lucide-react";
+import { Heart, Home, LogOut, ClipboardList } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { LogoutDialog } from "@/features/auth";
 
 const MobileBottomNav = () => {
-  const [activeTab, setActiveTab] = useState("category");
+  const [activeTab, setActiveTab] = useState("home");
 
   const navItems = [
     { id: "home", label: "Home", icon: Home, href: "/dashboard" },
-    { id: "cart", label: "Cart", icon: ShoppingCart, href: "/cart", badge: 3 },
+    {
+      id: "bookings",
+      label: "Bookings",
+      icon: ClipboardList,
+      href: "/booking",
+    },
     { id: "wishlist", label: "Wishlist", icon: Heart, href: "/wishlist" },
     { id: "logout", label: "Logout", icon: LogOut, action: "logout" },
   ];
