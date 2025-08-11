@@ -11,7 +11,7 @@ const MobileBottomNav = ({ activeTab, onTabChange }) => {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2 z-40">
+    <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border px-4 py-2 z-40">
       <div className="flex items-center justify-around">
         {navItems.map(({ id, label, icon: Icon }) => (
           <button
@@ -19,14 +19,14 @@ const MobileBottomNav = ({ activeTab, onTabChange }) => {
             onClick={() => onTabChange(id)}
             className={`flex flex-col items-center py-2 px-3 rounded-lg transition-colors ${
               activeTab === id
-                ? 'text-blue-600'
-                : 'text-gray-600 hover:text-blue-600'
+                ? 'text-primary'
+                : 'text-muted-foreground hover:text-primary'
             }`}
           >
             <Icon className="w-5 h-5 mb-1" />
             <span className="text-xs font-medium">{label}</span>
             {id === 'cart' && (
-              <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full w-4 h-4 flex items-center justify-center">
                 3
               </span>
             )}
