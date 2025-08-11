@@ -11,8 +11,8 @@ import {
   ArrowLeft,
   ChevronRight
 } from 'lucide-react';
-import Header from './Header';
-import { useResponsive } from '../../hooks/useResponsive';
+import Header from '@/features/rental-shop-dashboard/components/Header';
+import { useResponsive } from '@/hooks/useResponsive';
 
 // Sample product data
 const initialProducts = [

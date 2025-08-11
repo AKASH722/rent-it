@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useState, useMemo } from 'react';
-import Header from '../../../features/rental-shop-dashboard/Header';
-import CategoryBar from '../../../features/rental-shop-dashboard/CategoryBar';
-import Sidebar from '../../../features/rental-shop-dashboard/Sidebar';
-import ProductControls from '../../../features/rental-shop-dashboard/ProductControls';
-import ProductGrid from '../../../features/rental-shop-dashboard/ProductGrid';
-import Pagination from '../../../features/rental-shop-dashboard/Pagination';
-import MobileBottomNav from '../../../features/rental-shop-dashboard/MobileBottonNav';
-import { useResponsive } from '../../../hooks/useResponsive';
+import Header from '@/components/header';
+import CategoryBar from '@/features/rental-shop-dashboard/components/category-bar';
+import Sidebar from '@/features/rental-shop-dashboard/components/sidebar';
+import ProductControls from '@/features/rental-shop-dashboard/components/product-controls';
+import ProductGrid from '@/features/rental-shop-dashboard/components/product-grid';
+import Pagination from '@/components/pagination';
+import MobileBottomNav from '@/components/mobile-bottom-nav';
+import { useResponsive } from '@/hooks/useResponsive';
 
 function HomePage() {
   const { isMobile } = useResponsive();

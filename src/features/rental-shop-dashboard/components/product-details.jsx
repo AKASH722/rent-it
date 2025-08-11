@@ -9,12 +9,11 @@ import {
   Heart,
   ShoppingCart
 } from 'lucide-react';
-import Header from './Header';
+import Header from '@/components/header';
 
 const ProductDetailPage = ({ product }) => {
   const [quantity, setQuantity] = useState(2);
   const [isWishlisted, setIsWishlisted] = useState(false);
-  const [couponCode, setCouponCode] = useState('');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
 
@@ -196,23 +195,6 @@ const ProductDetailPage = ({ product }) => {
               <ShoppingCart className="h-5 w-5" />
               <span>Add to Cart</span>
             </button>
-
-            {/* Apply Coupon */}
-            <div className="bg-muted p-4 rounded-lg">
-              <h3 className="text-sm font-medium text-foreground mb-3">Apply Coupon</h3>
-              <div className="flex space-x-2">
-                <input
-                  type="text"
-                  placeholder="Enter coupon code"
-                  value={couponCode}
-                  onChange={(e) => setCouponCode(e.target.value)}
-                  className="flex-1 px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors bg-card"
-                />
-                <button className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">
-                  Apply
-                </button>
-              </div>
-            </div>
 
             {/* Terms & Conditions */}
             <div className="bg-muted p-4 rounded-lg">

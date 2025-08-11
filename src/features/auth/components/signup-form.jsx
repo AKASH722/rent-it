@@ -17,7 +17,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { PhoneInput } from "@/components/phone-input";
 import { isValidPhoneNumber } from "react-phone-number-input";
 import "react-phone-number-input/style.css";
-import { calculatePasswordStrength } from "../utils";
+import { calculatePasswordStrength } from "@/features/auth/utils";
 import { Shield, ShieldAlert, ShieldCheck, ShieldX } from "lucide-react";
 import { toast } from "sonner";
 import { signupUser } from "@/features/auth/actions/create-user";
