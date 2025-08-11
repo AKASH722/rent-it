@@ -13,6 +13,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import Header from '@/components/header';
+import Breadcrumb from '@/components/breadcrumb';
 import { useResponsive } from '@/hooks/useResponsive';
 
 // Sample product data
@@ -93,16 +94,8 @@ function ReviewOrders() {
       {/* Header Component */}
       <Header isMobile={isMobile} showMobileHeader={isMobile} />
 
-      {/* Breadcrumb - Desktop Only */}
-      <div className="hidden md:block max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-          <span className="text-destructive font-medium">Review Order</span>
-          <ChevronRight className="h-4 w-4" />
-          <span>Delivery</span>
-          <ChevronRight className="h-4 w-4" />
-          <span>Payment</span>
-        </div>
-      </div>
+      {/* Breadcrumb */}
+      <Breadcrumb currentStep="cart" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 md:pb-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

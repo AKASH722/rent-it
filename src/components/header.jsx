@@ -36,14 +36,14 @@ const Header = ({ isMobile, showMobileHeader = false }) => {
         <div className="flex items-center justify-between h-16">
           {/* Logo and Navigation */}
           <div className="flex items-center space-x-8">
-            <div className="flex items-center">
+            <Link href="/home" className="flex items-center cursor-pointer hover:opacity-80 transition-opacity">
               <Home className="w-8 h-8 text-primary" />
               <span className="ml-2 text-xl font-bold text-foreground">RentShop</span>
-            </div>
+            </Link>
             
             {!isMobile && (
               <nav className="flex space-x-6">
-                <a href="#" className="text-primary font-medium hover:text-primary/80 transition-colors">Home</a>
+                <Link href="/" className="text-primary font-medium hover:text-primary/80 transition-colors">Home</Link>
                 <a href="#" className="text-muted-foreground hover:text-primary transition-colors">Rental Shop</a>
                 <a href="#" className="text-muted-foreground hover:text-primary transition-colors">Wishlist</a>
               </nav>

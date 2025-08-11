@@ -12,6 +12,7 @@ import {
   CreditCard
 } from 'lucide-react';
 import Header from '@/components/header';
+import Breadcrumb from '@/components/breadcrumb';
 import { useResponsive } from '@/hooks/useResponsive';
 
 function Delivery() {
@@ -60,15 +61,7 @@ function Delivery() {
       <Header isMobile={isMobile} showMobileHeader={isMobile} />
 
       {/* Breadcrumb */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <nav className="flex items-center space-x-2 text-sm text-muted-foreground">
-          <a href="/cart" className="hover:text-primary transition-colors">Review Order</a>
-          <ChevronRight className="w-4 h-4" />
-          <span className="text-destructive font-semibold">Delivery</span>
-          <ChevronRight className="w-4 h-4" />
-          <span className="text-muted-foreground">Payment</span>
-        </nav>
-      </div>
+      <Breadcrumb currentStep="delivery" />
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
@@ -210,11 +203,13 @@ function Delivery() {
 
               {/* Action Buttons */}
               <div className="space-y-3">
-                <button className="w-full bg-gradient-to-r from-primary to-primary/80 text-primary-foreground py-3 px-6 rounded-lg font-semibold text-lg hover:from-primary/90 hover:to-primary/70 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]">
-                  Confirm Order
-                </button>
+                <Link href="/cart/payment" className="block w-full">
+                  <button className="w-full bg-gradient-to-r from-primary to-primary/80 text-primary-foreground py-3 px-6 rounded-lg font-semibold text-lg hover:from-primary/90 hover:to-primary/70 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]">
+                    Confirm Order
+                  </button>
+                </Link>
                 
-                <Link href="/cart">
+                <Link href="/cart" className="block w-full">
                   <button className="w-full border-2 border-border text-muted-foreground py-3 px-6 rounded-lg font-medium hover:border-primary hover:bg-muted transition-colors">
                     Back to Cart
                   </button>
