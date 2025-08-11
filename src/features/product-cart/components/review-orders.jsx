@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { 
   ShoppingCart, 
   Heart, 
@@ -11,7 +12,7 @@ import {
   ArrowLeft,
   ChevronRight
 } from 'lucide-react';
-import Header from '@/features/rental-shop-dashboard/components/Header';
+import Header from '@/components/header';
 import { useResponsive } from '@/hooks/useResponsive';
 
 // Sample product data
@@ -135,7 +136,7 @@ function ReviewOrders() {
                       <div>
                         <h3 className="font-bold text-lg text-foreground group-hover:text-primary transition-colors duration-200">{product.name}</h3>
                         <div className="flex items-center space-x-2 mt-1">
-                          <span className="text-2xl font-bold text-primary">${product.price.toFixed(2)}</span>
+                          <span className="text-2xl font-bold text-primary">₹{product.price.toFixed(2)}</span>
                           <span className="text-sm text-muted-foreground">each</span>
                         </div>
                       </div>
@@ -196,7 +197,7 @@ function ReviewOrders() {
                   <div className="mt-4 pt-4 border-t border-border/50">
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-muted-foreground">Subtotal</span>
-                      <span className="text-lg font-bold text-primary">${(product.price * product.quantity).toFixed(2)}</span>
+                      <span className="text-lg font-bold text-primary">₹{(product.price * product.quantity).toFixed(2)}</span>
                     </div>
                   </div>
                 </div>
@@ -240,39 +241,39 @@ function ReviewOrders() {
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Sub Total</span>
-                  <span className="font-medium">${subTotal.toFixed(2)}</span>
+                  <span className="font-medium">₹{subTotal.toFixed(2)}</span>
                 </div>
                 
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Delivery Charge</span>
                   <span className="font-medium">
-                    {deliveryCharge === 0 ? 'Free' : `$${deliveryCharge.toFixed(2)}`}
+                    {deliveryCharge === 0 ? 'Free' : `₹${deliveryCharge.toFixed(2)}`}
                   </span>
                 </div>
                 
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Taxes</span>
-                  <span className="font-medium">${taxAmount.toFixed(2)}</span>
+                  <span className="font-medium">₹{taxAmount.toFixed(2)}</span>
                 </div>
                 
                 {appliedCoupon && (
                   <div className="flex justify-between">
                     <span className="text-green-600">Discount</span>
-                    <span className="font-medium text-green-600">-${discount.toFixed(2)}</span>
+                    <span className="font-medium text-green-600">-₹{discount.toFixed(2)}</span>
                   </div>
                 )}
                 
                 <div className="border-t pt-3">
                   <div className="flex justify-between">
                     <span className="text-lg font-bold">Total</span>
-                    <span className="text-lg font-bold text-destructive">${total.toFixed(2)}</span>
+                    <span className="text-lg font-bold text-destructive">₹{total.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
               
-              <button className="w-full bg-gradient-to-r from-primary to-primary/80 text-primary-foreground py-4 px-6 rounded-lg hover:from-primary/90 hover:to-primary/70 transition-all duration-200 font-semibold flex items-center justify-center space-x-2 text-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 mt-6">
+              <Link href="/cart/delivery" className="w-full bg-gradient-to-r from-primary to-primary/80 text-primary-foreground py-4 px-6 rounded-lg hover:from-primary/90 hover:to-primary/70 transition-all duration-200 font-semibold flex items-center justify-center space-x-2 text-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 mt-6">
                 Proceed to Checkout
-              </button>
+              </Link>
             </div>
           </div>
         </div>

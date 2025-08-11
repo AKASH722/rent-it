@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-// import ProductDetailPage from '@/features/rental-shop-dashboard/components/product-details';
+import ProductDetailPage from '@/features/rental-shop-dashboard/components/product-details';
 // Mock product data - replace with actual API call
 const getProductById = (id) => {
   const products = {
@@ -118,6 +118,5 @@ export default function ProductPage({ params }) {
     );
   }
 
-//   return <ProductDetailPage product={product} />;
-return null; // Placeholder for the actual ProductDetailPage component
+  return <ProductDetailPage product={product} />;
 }

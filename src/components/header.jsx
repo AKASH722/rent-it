@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { 
   Home, 
   ShoppingCart, 
@@ -51,12 +52,12 @@ const Header = ({ isMobile, showMobileHeader = false }) => {
 
           {/* Right side - User Profile and Cart */}
           <div className="flex items-center space-x-4">
-            <button className="relative p-2 text-muted-foreground hover:text-primary transition-colors">
+            <Link href="/cart" className="relative p-2 text-muted-foreground hover:text-primary transition-colors">
               <ShoppingCart className="w-6 h-6" />
               <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
                 3
               </span>
-            </button>
+            </Link>
 
             {/* Contact Us Button */}
             <button className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
