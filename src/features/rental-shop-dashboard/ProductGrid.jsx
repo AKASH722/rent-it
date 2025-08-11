@@ -1,4 +1,7 @@
+"use client";
+
 import React from 'react';
+import Link from 'next/link';
 import { Heart, ShoppingCart, Plus, Minus } from 'lucide-react';
 
 const ProductGrid = ({
@@ -101,15 +104,19 @@ const ProductGrid = ({
     <div className={`grid ${gridCols} gap-4`}>
       {products.map(product => (
         <div key={product.id} className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
-          {/* Product Image */}
-          <div className="h-48 bg-gradient-to-br from-muted to-muted/80 flex items-center justify-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <span className="text-muted-foreground">Image</span>
-          </div>
+          {/* Product Image - Clickable */}
+          <Link href={`/product/${product.id}`}>
+            <div className="h-48 bg-gradient-to-br from-muted to-muted/80 flex items-center justify-center relative overflow-hidden cursor-pointer">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <span className="text-muted-foreground">Image</span>
+            </div>
+          </Link>
 
           {/* Product Info */}
           <div className="p-4">
-            <h3 className="font-medium text-foreground mb-2">{product.name}</h3>
+            <Link href={`/product/${product.id}`}>
+              <h3 className="font-medium text-foreground mb-2 hover:text-primary transition-colors cursor-pointer">{product.name}</h3>
+            </Link>
             <p className="text-lg font-bold text-primary mb-3">₹{product.price}</p>
             
             <div className="flex items-center justify-between">
