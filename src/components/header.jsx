@@ -80,7 +80,7 @@ const Header = ({ isMobile, showMobileHeader = false }) => {
             <Link href="/wishlist" className="relative p-2 text-muted-foreground hover:text-primary transition-colors">
               <Heart className="w-6 h-6" />
               {wishlistItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
                   {wishlistItemCount}
                 </span>
               )}
