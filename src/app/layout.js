@@ -1,5 +1,6 @@
 import { Poppins, Libre_Baskerville, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -30,6 +31,7 @@ export default function RootLayout({ children }) {
         className={`${poppins.variable} ${libreBaskerville.variable} ${ibmPlexMono.variable} antialiased`}
       >
         {children}
+        <Toaster richColors />
       </body>
     </html>
   );
