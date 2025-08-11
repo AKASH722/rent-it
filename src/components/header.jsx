@@ -1,135 +1,92 @@
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { 
-  Home, 
-  ShoppingCart, 
-  Heart, 
-  User, 
-  ChevronDown, 
+"use client";
+
+import React from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  ArrowLeft,
+  Filter,
+  Heart,
+  Home,
   MessageCircle,
   Search,
-  Filter,
-  ArrowLeft
-} from 'lucide-react';
-import { cartUtils, wishlistUtils } from '@/features/rental-shop-dashboard/util';
+} from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { LogoutDialog } from "@/features/auth";
 
-const Header = ({ isMobile, showMobileHeader = false }) => {
-  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
-  const [cartItemCount, setCartItemCount] = useState(0);
-  const [wishlistItemCount, setWishlistItemCount] = useState(0);
+const Header = () => {
+  const isMobile = useIsMobile();
+  const pathname = usePathname();
 
-  useEffect(() => {
-    // Initialize counts
-    setCartItemCount(cartUtils.getCartItemCount());
-    setWishlistItemCount(wishlistUtils.getWishlistItemCount());
+  const isActive = (path) => pathname === path;
 
-    // Subscribe to changes
-    const unsubscribeCart = cartUtils.subscribe(() => {
-      setCartItemCount(cartUtils.getCartItemCount());
-    });
-
-    const unsubscribeWishlist = wishlistUtils.subscribe(() => {
-      setWishlistItemCount(wishlistUtils.getWishlistItemCount());
-    });
-
-    // Cleanup subscriptions
-    return () => {
-      unsubscribeCart();
-      unsubscribeWishlist();
-    };
-  }, []);
-
-  if (showMobileHeader) {
+  if (isMobile) {
     return (
-      <header className="bg-card shadow-sm border-b border-border p-4 flex items-center justify-between">
+      <header className="bg-card border-border flex items-center justify-between border-b p-4 shadow-sm">
         <div className="flex items-center gap-3">
-          <ArrowLeft className="w-5 h-5 text-muted-foreground" />
-          <h1 className="text-lg font-semibold text-foreground">Rental shop page</h1>
+          <ArrowLeft className="text-muted-foreground h-5 w-5" />
+          <h1 className="text-foreground text-lg font-semibold">
+            Rental shop page
+          </h1>
         </div>
         <div className="flex items-center gap-3">
-          <Search className="w-5 h-5 text-muted-foreground" />
-          <Filter className="w-5 h-5 text-muted-foreground" />
+          <Search className="text-muted-foreground h-5 w-5" />
+          <Filter className="text-muted-foreground h-5 w-5" />
         </div>
       </header>
     );
   }
 
   return (
-    <header className="bg-card shadow-sm border-b border-border">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo and Navigation */}
+    <header className="bg-card border-border border-b shadow-sm">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between">
+          {/* Logo + Navigation */}
           <div className="flex items-center space-x-8">
-            <Link href="/home" className="flex items-center cursor-pointer hover:opacity-80 transition-opacity">
-              <Home className="w-8 h-8 text-primary" />
-              <span className="ml-2 text-xl font-bold text-foreground">RentShop</span>
+            <Link
+              href="/dashboard"
+              className="flex cursor-pointer items-center transition-opacity hover:opacity-80"
+            >
+              <Home className="text-primary h-8 w-8" />
+              <span className="text-foreground ml-2 text-xl font-bold">
+                RentShop
+              </span>
             </Link>
-            
-            {!isMobile && (
-              <nav className="flex space-x-6">
-                <Link href="/Home" className="text-primary font-medium hover:text-primary/80 transition-colors">Home</Link>
-                {/* <a href="#" className="text-muted-foreground hover:text-primary transition-colors">Rental Shop</a> */}
-                <Link href="/wishlist" className="text-muted-foreground hover:text-primary transition-colors">Wishlist</Link>
-              </nav>
-            )}
+
+            <nav className="flex space-x-6">
+              <Link
+                href="/dashboard"
+                className={`font-medium transition-colors ${
+                  isActive("/dashboard")
+                    ? "text-primary"
+                    : "text-muted-foreground hover:text-primary"
+                }`}
+              >
+                Dashboard
+              </Link>
+              <Link
+                href="/wishlist"
+                className={`flex items-center gap-1 transition-colors ${
+                  isActive("/wishlist")
+                    ? "text-primary"
+                    : "text-muted-foreground hover:text-primary"
+                }`}
+              >
+                <Heart className="h-5 w-5" />
+                Wishlist
+              </Link>
+            </nav>
           </div>
 
-          {/* Right side - User Profile and Cart */}
+          {/* Actions */}
           <div className="flex items-center space-x-4">
-            {/* Wishlist */}
-            <Link href="/wishlist" className="relative p-2 text-muted-foreground hover:text-primary transition-colors">
-              <Heart className="w-6 h-6" />
-              {wishlistItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {wishlistItemCount}
-                </span>
-              )}
-            </Link>
-
-            {/* Cart */}
-            <Link href="/cart" className="relative p-2 text-muted-foreground hover:text-primary transition-colors">
-              <ShoppingCart className="w-6 h-6" />
-              {cartItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {cartItemCount}
-                </span>
-              )}
-            </Link>
-
-            {/* Contact Us Button */}
-            <button className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
-              <MessageCircle className="w-4 h-4" />
+            <button className="bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2 rounded-lg px-4 py-2 transition-colors">
+              <MessageCircle className="h-4 w-4" />
               <span className="text-sm font-medium">Contact Us</span>
             </button>
 
-            {/* User Profile */}
             <div className="relative">
-              <button 
-                onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-                className="flex items-center space-x-2 p-2 rounded-xl hover:bg-muted transition-all duration-200 transform hover:scale-105"
-              >
-                <div className="w-8 h-8 bg-gradient-to-r from-primary to-primary/80 rounded-full flex items-center justify-center shadow-md">
-                  <User className="w-5 h-5 text-primary-foreground" />
-                </div>
-                {!isMobile && (
-                  <>
-                    <span className="text-sm font-medium text-foreground">John Doe</span>
-                    <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${showProfileDropdown ? 'rotate-180' : ''}`} />
-                  </>
-                )}
-              </button>
-
-              {/* Profile Dropdown */}
-              {showProfileDropdown && (
-                <div className="absolute right-0 mt-2 w-48 bg-card rounded-xl shadow-2xl border border-border py-2 z-50 animate-in slide-in-from-top-2 duration-200">
-                  <a href="#" className="block px-4 py-3 text-sm text-foreground hover:bg-muted transition-colors duration-150">
-                    My Profile
-                  </a>
-                  <a href="#" className="block px-4 py-3 text-sm text-foreground hover:bg-muted transition-colors duration-150">
-                    Logout
-                  </a>
-                </div>
-              )}
+              <LogoutDialog />
             </div>
           </div>
         </div>

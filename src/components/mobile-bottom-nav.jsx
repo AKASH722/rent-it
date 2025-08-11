@@ -1,37 +1,75 @@
-import React from 'react';
-import { Home, Grid3X3, ShoppingCart, Heart, User } from 'lucide-react';
+"use client";
 
-const MobileBottomNav = ({ activeTab, onTabChange }) => {
+import React, { useState } from "react";
+import Link from "next/link";
+import { Heart, Home, LogOut, ShoppingCart } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { LogoutDialog } from "@/features/auth";
+
+const MobileBottomNav = () => {
+  const [activeTab, setActiveTab] = useState("category");
+
   const navItems = [
-    { id: 'home', label: 'Home', icon: Home },
-    { id: 'category', label: 'Category', icon: Grid3X3 },
-    { id: 'cart', label: 'Cart', icon: ShoppingCart },
-    { id: 'wishlist', label: 'Wishlist', icon: Heart },
-    { id: 'profile', label: 'Profile', icon: User },
+    { id: "home", label: "Home", icon: Home, href: "/dashboard" },
+    { id: "cart", label: "Cart", icon: ShoppingCart, href: "/cart", badge: 3 },
+    { id: "wishlist", label: "Wishlist", icon: Heart, href: "/wishlist" },
+    { id: "logout", label: "Logout", icon: LogOut, action: "logout" },
   ];
 
+  const isMobile = useIsMobile();
+
+  if (!isMobile) return null;
+
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border px-4 py-2 z-40">
+    <div className="bg-card border-border fixed right-0 bottom-0 left-0 z-40 border-t px-4 py-2">
       <div className="flex items-center justify-around">
-        {navItems.map(({ id, label, icon: Icon }) => (
-          <button
-            key={id}
-            onClick={() => onTabChange(id)}
-            className={`flex flex-col items-center py-2 px-3 rounded-lg transition-colors ${
-              activeTab === id
-                ? 'text-primary'
-                : 'text-muted-foreground hover:text-primary'
-            }`}
-          >
-            <Icon className="w-5 h-5 mb-1" />
-            <span className="text-xs font-medium">{label}</span>
-            {id === 'cart' && (
-              <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                3
-              </span>
-            )}
-          </button>
-        ))}
+        {navItems.map(({ id, label, icon: Icon, href, badge, action }) => {
+          const isActive = activeTab === id;
+
+          const buttonContent = (
+            <>
+              <Icon className="mb-1 h-5 w-5" />
+              <span className="text-xs font-medium">{label}</span>
+              {badge && (
+                <span className="bg-primary text-primary-foreground absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full text-xs">
+                  {badge}
+                </span>
+              )}
+            </>
+          );
+
+          return action === "logout" ? (
+            <div key={id} className="relative">
+              <LogoutDialog
+                trigger={
+                  <button
+                    onClick={() => setActiveTab(id)}
+                    className={`flex flex-col items-center rounded-lg px-3 py-2 transition-colors ${
+                      isActive
+                        ? "text-primary"
+                        : "text-muted-foreground hover:text-primary"
+                    }`}
+                  >
+                    {buttonContent}
+                  </button>
+                }
+              />
+            </div>
+          ) : (
+            <Link
+              key={id}
+              href={href || "#"}
+              onClick={() => setActiveTab(id)}
+              className={`relative flex flex-col items-center rounded-lg px-3 py-2 transition-colors ${
+                isActive
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-primary"
+              }`}
+            >
+              {buttonContent}
+            </Link>
+          );
+        })}
       </div>
     </div>
   );
