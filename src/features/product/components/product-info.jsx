@@ -1,6 +1,12 @@
-import Image from "next/image"
+import Image from "next/image";
 
 export default function ProductInfoSection({ product }) {
+    // Helper to format price with ₹ and 2 decimals
+    const formatPrice = (price) => {
+        if (price === undefined || price === null) return "Not set";
+        return `₹${price.toFixed(2)}`;
+    };
+
     return (
         <div className="space-y-4 sm:space-y-6 px-4 sm:px-0">
             <h2 className="text-lg sm:text-xl font-semibold border-border pb-2 sm:pb-3 mb-3 sm:mb-4">
@@ -46,30 +52,30 @@ export default function ProductInfoSection({ product }) {
                 </div>
 
                 {/* Pricing Information */}
-                {product.basePricePerHour && (
+                {product.basePricePerHour !== undefined && (
                     <div className="flex flex-col sm:flex-row sm:items-start space-y-1 sm:space-y-0">
                         <span className="font-medium w-full sm:w-32 sm:shrink-0 text-gray-700">Price/Hour:</span>
-                        <span className="flex-1 font-semibold text-green-600">${product.basePricePerHour.toFixed(2)}</span>
+                        <span className="flex-1 font-semibold text-green-600">{formatPrice(product.basePricePerHour)}</span>
                     </div>
                 )}
 
-                {product.basePricePerDay && (
+                {product.basePricePerDay !== undefined && (
                     <div className="flex flex-col sm:flex-row sm:items-start space-y-1 sm:space-y-0">
                         <span className="font-medium w-full sm:w-32 sm:shrink-0 text-gray-700">Price/Day:</span>
-                        <span className="flex-1 font-semibold text-green-600">${product.basePricePerDay.toFixed(2)}</span>
+                        <span className="flex-1 font-semibold text-green-600">{formatPrice(product.basePricePerDay)}</span>
                     </div>
                 )}
 
-                {product.basePricePerWeek && (
+                {product.basePricePerWeek !== undefined && (
                     <div className="flex flex-col sm:flex-row sm:items-start space-y-1 sm:space-y-0">
                         <span className="font-medium w-full sm:w-32 sm:shrink-0 text-gray-700">Price/Week:</span>
-                        <span className="flex-1 font-semibold text-green-600">${product.basePricePerWeek.toFixed(2)}</span>
+                        <span className="flex-1 font-semibold text-green-600">{formatPrice(product.basePricePerWeek)}</span>
                     </div>
                 )}
 
                 <div className="flex flex-col sm:flex-row sm:items-start space-y-1 sm:space-y-0">
                     <span className="font-medium w-full sm:w-32 sm:shrink-0 text-gray-700">Late Fee/Hour:</span>
-                    <span className="flex-1 font-semibold text-red-600">${product.LateFeePerHour.toFixed(2)}</span>
+                    <span className="flex-1 font-semibold text-red-600">{formatPrice(product.LateFeePerHour)}</span>
                 </div>
 
                 <div className="flex flex-col sm:flex-row sm:items-start space-y-1 sm:space-y-0">
@@ -110,5 +116,5 @@ export default function ProductInfoSection({ product }) {
                 </div>
             )}
         </div>
-    )
+    );
 }

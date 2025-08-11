@@ -6,7 +6,7 @@ export default function ProductsList({ products }) {
 
     const formatPrice = (price) => {
         if (!price) return "Not set";
-        return `$${price.toFixed(2)}`;
+        return `₹${price.toFixed(2)}`;
     };
 
     const formatDate = (dateString) => {

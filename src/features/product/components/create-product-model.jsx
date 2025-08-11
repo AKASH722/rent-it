@@ -5,16 +5,15 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { X, Plus } from "lucide-react"
+import { X, Plus, Calendar, AlertTriangle } from "lucide-react"
 import { createProduct } from "../actions/create-product"
-import { uploadImageAction } from "../actions/upload-image";
+import { uploadImageAction } from "../actions/upload-image"
 import { toast } from "sonner"
 
-
-export default function CreateProductModal({ isOpen, onClose, categories }) {
+export default function CreateProductModal({ isOpen, onClose, categories, customerGroups = [] }) {
     const [formData, setFormData] = useState({
         name: "",
         description: "",
@@ -32,8 +31,83 @@ export default function CreateProductModal({ isOpen, onClose, categories }) {
         week: false
     })
     const [attributes, setAttributes] = useState([{ key: "", value: "" }])
+    const [priceList, setPriceList] = useState({
+        name: "",
+        startDate: "",
+        endDate: "",
+        multiplier: "",
+        customerGroups: []
+    })
     const [imagePreview, setImagePreview] = useState(null)
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [showPriceList, setShowPriceList] = useState(false)
+    const [dateErrors, setDateErrors] = useState({})
+
+    // Helper function to get today's date in YYYY-MM-DD format
+    const getTodayString = () => {
+        return new Date().toISOString().split('T')[0]
+    }
+
+    // Helper function to format date for input (ensures local timezone)
+    const formatDateForInput = (date) => {
+        if (!date) return ""
+        const d = new Date(date)
+        if (isNaN(d.getTime())) return ""
+
+        // Use local timezone to avoid timezone shift issues
+        const year = d.getFullYear()
+        const month = String(d.getMonth() + 1).padStart(2, '0')
+        const day = String(d.getDate()).padStart(2, '0')
+        return `${year}-${month}-${day}`
+    }
+
+    // Helper function to validate date ranges
+    const validateDateRange = (startDate, endDate) => {
+        const errors = {}
+        const today = new Date()
+        today.setHours(0, 0, 0, 0) // Reset time for accurate comparison
+
+        if (startDate) {
+            const start = new Date(startDate)
+            start.setHours(0, 0, 0, 0)
+
+            // Check if start date is in the past
+            if (start < today) {
+                errors.startDate = "Start date cannot be in the past"
+            }
+        }
+
+        if (startDate && endDate) {
+            const start = new Date(startDate)
+            const end = new Date(endDate)
+
+            // Check if dates are valid
+            if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+                errors.dateFormat = "Invalid date format"
+            } else {
+                start.setHours(0, 0, 0, 0)
+                end.setHours(0, 0, 0, 0)
+
+                // Check if end date is before start date
+                if (end < start) {
+                    errors.endDate = "End date cannot be before start date"
+                }
+
+                // Check for minimum duration (at least 1 day)
+                if (end.getTime() === start.getTime()) {
+                    errors.duration = "Price list must be active for at least 1 day"
+                }
+
+                // Optional: Check for maximum duration (e.g., 2 years)
+                const maxDuration = 2 * 365 * 24 * 60 * 60 * 1000 // 2 years in milliseconds
+                if (end.getTime() - start.getTime() > maxDuration) {
+                    errors.duration = "Price list duration cannot exceed 2 years"
+                }
+            }
+        }
+
+        return errors
+    }
 
     const handleInputChange = (field, value) => {
         setFormData(prev => ({
@@ -82,6 +156,33 @@ export default function CreateProductModal({ isOpen, onClose, categories }) {
         setAttributes(updated)
     }
 
+    // Enhanced PriceList functions with date validation
+    const updatePriceList = (field, value) => {
+        setPriceList(prev => {
+            const updated = { ...prev, [field]: value }
+
+            // Validate dates when either start or end date changes
+            if (field === 'startDate' || field === 'endDate') {
+                const errors = validateDateRange(
+                    field === 'startDate' ? value : prev.startDate,
+                    field === 'endDate' ? value : prev.endDate
+                )
+                setDateErrors(errors)
+            }
+
+            return updated
+        })
+    }
+
+    const updatePriceListCustomerGroups = (customerGroupId, checked) => {
+        setPriceList(prev => ({
+            ...prev,
+            customerGroups: checked
+                ? [...prev.customerGroups, customerGroupId]
+                : prev.customerGroups.filter(id => id !== customerGroupId)
+        }))
+    }
+
     const resetForm = () => {
         setFormData({
             name: "",
@@ -100,8 +201,17 @@ export default function CreateProductModal({ isOpen, onClose, categories }) {
             week: false
         })
         setAttributes([{ key: "", value: "" }])
+        setPriceList({
+            name: "",
+            startDate: "",
+            endDate: "",
+            multiplier: "",
+            customerGroups: []
+        })
         setImagePreview(null)
         setIsSubmitting(false)
+        setShowPriceList(false)
+        setDateErrors({})
     }
 
     const uploadImage = async (imageFile) => {
@@ -119,6 +229,24 @@ export default function CreateProductModal({ isOpen, onClose, categories }) {
         setIsSubmitting(true)
 
         try {
+            // Validate price list dates if provided
+            if (showPriceList && (priceList.name || priceList.startDate || priceList.endDate || priceList.multiplier)) {
+                const errors = validateDateRange(priceList.startDate, priceList.endDate)
+                if (Object.keys(errors).length > 0) {
+                    setDateErrors(errors)
+                    setIsSubmitting(false)
+                    toast.error("Please fix the date errors before submitting")
+                    return
+                }
+
+                // Ensure all required price list fields are provided
+                if (!priceList.name || !priceList.startDate || !priceList.endDate || !priceList.multiplier) {
+                    toast.error("Please fill in all price list fields or remove the price list")
+                    setIsSubmitting(false)
+                    return
+                }
+            }
+
             // Upload image if provided
             let imageUrl = null
             if (formData.image) {
@@ -146,27 +274,41 @@ export default function CreateProductModal({ isOpen, onClose, categories }) {
                 productData.basePricePerWeek = parseFloat(formData.basePricePerWeek)
             }
 
+            // Prepare attributes
+            const validAttributes = attributes.filter(attr => attr.key && attr.value)
+            if (validAttributes.length > 0) {
+                productData.attributes = validAttributes
+            }
+
+            // Prepare price list with proper date handling
+            if (priceList.name && priceList.startDate && priceList.endDate && priceList.multiplier) {
+                // Create dates with proper timezone handling
+                const startDate = new Date(priceList.startDate + 'T00:00:00.000Z')
+                const endDate = new Date(priceList.endDate + 'T23:59:59.999Z')
+
+                productData.priceList = {
+                    name: priceList.name,
+                    startDate: startDate,
+                    endDate: endDate,
+                    multiplier: parseFloat(priceList.multiplier),
+                    customerGroups: priceList.customerGroups
+                }
+            }
+
             // Call your createProduct method
             const result = await createProduct(productData)
 
             console.log('Product created successfully:', result)
 
-            // Handle attributes separately if needed (you may need another API call)
-            const validAttributes = attributes.filter(attr => attr.key && attr.value)
-            if (validAttributes.length > 0) {
-                console.log('Product attributes to save:', validAttributes)
-          
-            }
-      
-           resetForm()
+            resetForm()
             onClose()
-         
-            toast('Product created successfully!')
-            window.location.reload() 
+
+            toast.success('Product created successfully!')
+            window.location.reload()
 
         } catch (error) {
             console.error('Failed to create product:', error)
-            toast('Failed to create product: ' + error.message)
+            toast.error('Failed to create product: ' + error.message)
         } finally {
             setIsSubmitting(false)
         }
@@ -178,10 +320,11 @@ export default function CreateProductModal({ isOpen, onClose, categories }) {
     }
 
     const isPricingSelected = pricingTypes.hour || pricingTypes.day || pricingTypes.week
+    const hasDateErrors = Object.keys(dateErrors).length > 0
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Create New Product</DialogTitle>
                 </DialogHeader>
@@ -223,7 +366,6 @@ export default function CreateProductModal({ isOpen, onClose, categories }) {
                         />
                     </div>
 
-                    
                     <div className="space-y-2">
                         <Label htmlFor="categoryId">Category</Label>
                         <Select
@@ -243,7 +385,6 @@ export default function CreateProductModal({ isOpen, onClose, categories }) {
                         </Select>
                     </div>
 
-
                     {/* Late Fee */}
                     <div className="space-y-2">
                         <Label htmlFor="LateFeePerHour">Late Fee Per Hour *</Label>
@@ -261,7 +402,7 @@ export default function CreateProductModal({ isOpen, onClose, categories }) {
 
                     {/* Pricing Options */}
                     <div className="space-y-4">
-                        <Label>Pricing Options *</Label>
+                        <Label>Base Pricing Options *</Label>
                         <div className="space-y-3">
                             <div className="flex items-center space-x-3">
                                 <Checkbox
@@ -328,6 +469,130 @@ export default function CreateProductModal({ isOpen, onClose, categories }) {
                         </div>
                         {!isPricingSelected && (
                             <p className="text-sm text-red-500">Please select at least one pricing option</p>
+                        )}
+                    </div>
+
+                    {/* Dynamic Price List with Enhanced Date Validation */}
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <Label>Dynamic Price List (Optional)</Label>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setShowPriceList(!showPriceList)}
+                                className="flex items-center gap-1"
+                            >
+                                <Calendar className="w-4 h-4" />
+                                {showPriceList ? 'Hide' : 'Add'} Price List
+                            </Button>
+                        </div>
+
+                        {showPriceList && (
+                            <div className="space-y-4">
+                                <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-md">
+                                    Price list allows you to set different pricing during a specific date range using a multiplier.
+                                    For example: 1.2 = 20% increase, 0.8 = 20% discount.
+                                </div>
+
+                                {/* Date Error Display */}
+                                {hasDateErrors && (
+                                    <div className="bg-red-50 border border-red-200 rounded-md p-3">
+                                        <div className="flex items-center gap-2 text-red-800">
+                                            <AlertTriangle className="w-4 h-4" />
+                                            <span className="font-medium">Date Validation Errors:</span>
+                                        </div>
+                                        <ul className="mt-2 text-sm text-red-700 list-disc list-inside">
+                                            {Object.entries(dateErrors).map(([key, error]) => (
+                                                <li key={key}>{error}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+
+                                <Card className="p-4">
+                                    <CardHeader className="p-0 pb-3">
+                                        <CardTitle className="text-lg">Price List Configuration</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="p-0 space-y-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <Label>Price List Name</Label>
+                                                <Input
+                                                    placeholder="e.g., Summer Sale, Holiday Pricing"
+                                                    value={priceList.name}
+                                                    onChange={(e) => updatePriceList("name", e.target.value)}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label>Multiplier</Label>
+                                                <Input
+                                                    type="number"
+                                                    step="0.01"
+                                                    min="0"
+                                                    placeholder="1.0 (no change)"
+                                                    value={priceList.multiplier}
+                                                    onChange={(e) => updatePriceList("multiplier", e.target.value)}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <Label>Start Date</Label>
+                                                <Input
+                                                    type="date"
+                                                    min={getTodayString()}
+                                                    value={priceList.startDate}
+                                                    onChange={(e) => updatePriceList("startDate", e.target.value)}
+                                                    className={dateErrors.startDate ? "border-red-500" : ""}
+                                                />
+                                                {dateErrors.startDate && (
+                                                    <p className="text-sm text-red-500">{dateErrors.startDate}</p>
+                                                )}
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label>End Date</Label>
+                                                <Input
+                                                    type="date"
+                                                    min={priceList.startDate || getTodayString()}
+                                                    value={priceList.endDate}
+                                                    onChange={(e) => updatePriceList("endDate", e.target.value)}
+                                                    className={dateErrors.endDate ? "border-red-500" : ""}
+                                                />
+                                                {dateErrors.endDate && (
+                                                    <p className="text-sm text-red-500">{dateErrors.endDate}</p>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {customerGroups.length > 0 && (
+                                            <div className="space-y-2">
+                                                <Label>Customer Groups (Optional)</Label>
+                                                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                                    {customerGroups.map((group) => (
+                                                        <div key={group.id} className="flex items-center space-x-2">
+                                                            <Checkbox
+                                                                id={`priceList-group-${group.id}`}
+                                                                checked={priceList.customerGroups.includes(group.id)}
+                                                                onCheckedChange={(checked) =>
+                                                                    updatePriceListCustomerGroups(group.id, checked)
+                                                                }
+                                                            />
+                                                            <Label
+                                                                htmlFor={`priceList-group-${group.id}`}
+                                                                className="text-sm"
+                                                            >
+                                                                {group.name}
+                                                            </Label>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            </div>
                         )}
                     </div>
 
@@ -413,7 +678,7 @@ export default function CreateProductModal({ isOpen, onClose, categories }) {
                         </Button>
                         <Button
                             type="submit"
-                            disabled={isSubmitting || !isPricingSelected}
+                            disabled={isSubmitting || !isPricingSelected || hasDateErrors}
                         >
                             {isSubmitting ? "Creating..." : "Create Product"}
                         </Button>

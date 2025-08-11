@@ -44,12 +44,13 @@ export async function createProduct({
     LateFeePerHour,
     imageUrl = null,
     categoryId = null,
+    priceList = null,
+    attributes = []
 }) {
     if (!name) throw new Error("Product name is required");
     if (LateFeePerHour == null) throw new Error("Late fee per hour is required");
 
     const slug = await generateUniqueSlug(name);
-   
 
     return createProductRecord({
         name,
@@ -62,8 +63,11 @@ export async function createProduct({
         LateFeePerHour,
         categoryId,
         slug,
+        priceList,
+        attributes
     });
 }
+
 
 export async function findProductBySlug(slug) {
     if (!slug) throw new Error("Slug is required");
@@ -78,11 +82,8 @@ export async function updateProduct(productId, updates) {
     if (!updates || typeof updates !== "object") {
         throw new Error("Updates object is required");
     }
-
     return await updateProductRecord(productId, updates);
 }
-
-
 
 
 

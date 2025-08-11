@@ -1,7 +1,16 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-
 export default function RentalPricingSection({ product }) {
-    const { PriceList = [], LateFeePerHour } = product;
+    const { PriceList = [], LateFeePerHour, basePricePerHour = 0, basePricePerDay = 0, basePricePerWeek = 0 } = product;
+
+    // Calculate price based on period and multiplier
+    const calculatePrice = (multiplier) => {
+        return (basePricePerHour * multiplier).toFixed(2);
+    };
+
+    // Format price with ₹ symbol
+    const formatPrice = (price) => {
+        return `₹${price}`;
+    };
 
     return (
         <div className="space-y-4 sm:space-y-6 px-4 sm:px-0 md:border-l md:border-border md:pl-8">
@@ -22,10 +31,12 @@ export default function RentalPricingSection({ product }) {
                     <TableBody>
                         {PriceList.map((item, index) => (
                             <TableRow key={index} className="border-b border-border hover:bg-muted">
-                                <TableCell className="py-2 pr-4">{item.period}</TableCell>
+                                <TableCell className="py-2 pr-4">
+                                    {new Date(item.startDate).toLocaleDateString()} - {new Date(item.endDate).toLocaleDateString()}
+                                </TableCell>
                                 <TableCell className="py-2 px-4">{item.name}</TableCell>
                                 <TableCell className="py-2 pl-4 font-semibold text-green-600">
-                                    ${item.price.toFixed(2)}
+                                    {formatPrice(calculatePrice(item.multiplier))}
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -42,7 +53,9 @@ export default function RentalPricingSection({ product }) {
                     >
                         <div className="flex justify-between items-start">
                             <span className="font-semibold text-sm">{item.period}</span>
-                            <span className="font-bold text-green-600 text-sm">${item.price.toFixed(2)}</span>
+                            <span className="font-bold text-green-600 text-sm">
+                                {formatPrice(calculatePrice(item.multiplier))}
+                            </span>
                         </div>
                         <div className="text-xs text-muted-foreground">
                             <span className="font-medium">Pricelist:</span> {item.name}
@@ -58,12 +71,12 @@ export default function RentalPricingSection({ product }) {
                     <div className="hidden sm:flex items-start text-sm">
                         <span className="font-medium w-32 shrink-0 text-gray-700">Late Fee/Hour:</span>
                         <span className="flex-1 font-semibold text-red-600">
-                            ${LateFeePerHour.toFixed(2)} Rs
+                            {formatPrice(LateFeePerHour.toFixed(2))}
                         </span>
                     </div>
                     <div className="sm:hidden flex justify-between items-center p-3 bg-red-50 rounded border-l-4 border-red-400">
                         <span className="font-medium text-sm">Late Fee/Hour</span>
-                        <span className="font-bold text-red-600 text-sm">${LateFeePerHour.toFixed(2)} Rs</span>
+                        <span className="font-bold text-red-600 text-sm">{formatPrice(LateFeePerHour.toFixed(2))}</span>
                     </div>
                 </div>
             )}
