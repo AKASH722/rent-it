@@ -179,7 +179,7 @@ export function RentalOrdersPage() {
           onCollapse={() => setSidebarCollapsed((c) => !c)}
         />
         {/* Main content */}
-        <main className="flex-1 max-w-full p-4 md:p-6 sm:ml-64">
+        <main className="flex-1 max-w-full p-4 md:p-6 ">
           <RentalOrdersToolbar
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
