@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 
 const statusColorMap = {
   quotation: "bg-primary/10 text-primary border-primary/20",
@@ -21,6 +22,7 @@ export function RentalOrdersGrid({
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {filteredOrders.map((order) => (
+        <Link href={`store/rentals/${order.id}`}>
         <Card key={order.id} className="transition-shadow hover:shadow-md">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
@@ -46,7 +48,8 @@ export function RentalOrdersGrid({
               <p className="font-semibold">₹{order.total}</p>
             </div>
           </CardContent>
-        </Card>
+          </Card>
+        </Link>
       ))}
     </div>
   );

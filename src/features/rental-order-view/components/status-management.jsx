@@ -6,7 +6,6 @@ const rentalStates = [
   { id: "rental-order", label: "Rental Order" },
   { id: "delivery", label: "Delivery" },
   { id: "return", label: "Return" },
-  { id: "invoiced", label: "Invoiced" }
 ];
 
 const orderStates = [
@@ -43,7 +42,7 @@ export function StatusManagement({
                     isCompleted && "bg-muted text-muted-foreground",
                     !isActive && !isCompleted && "bg-inactive-status text-inactive-status-foreground"
                   )}
-                  onClick={() => onStateChange?.("rental", state.id)}
+                  // onClick={() => onStateChange?.("rental", state.id)}
                 >
                   {state.label}
                 </Button>
@@ -53,7 +52,7 @@ export function StatusManagement({
         </div>
 
         {/* Order State Management (shown when confirmed) */}
-        {orderStatus === "confirmed" && (
+        {/* {orderStatus === "confirmed" && (
           <div className="space-y-2">
             <h3 className="text-sm font-medium text-muted-foreground">Order State</h3>
             <div className="flex flex-wrap gap-2">
@@ -80,7 +79,7 @@ export function StatusManagement({
               })}
             </div>
           </div>
-        )}
+        )} */}
 
       </div>
     </div>

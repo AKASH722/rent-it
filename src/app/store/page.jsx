@@ -1,3 +1,5 @@
+import { RentalOrders } from "@/features/rental-orders";
+
 export default function Page() {
-  return <div>Store</div>;
+  return <RentalOrders />;
 }

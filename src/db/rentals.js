@@ -51,3 +51,28 @@ export async function cancelBooking(id) {
         }
     });
 }
+
+
+export async function updateBooking(id) {
+    return await prisma.booking.update({
+        where: { id },
+        data: {
+            status: BOOKING_STATUS.PICKEDUP
+        }
+    });
+}
+
+export async function getPickupDate(bookingId) {
+    try {
+        const pickup = await prisma.pickup.findFirst({
+            where: { bookingId },
+            select: { scheduledAt: true },
+            orderBy: { scheduledAt: "desc" },
+        });
+
+        return pickup?.scheduledAt || null;
+    } catch (error) {
+        console.error("Error fetching pickup date:", error);
+        return null;
+    }
+}
