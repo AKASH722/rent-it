@@ -76,3 +76,33 @@ export async function getPickupDate(bookingId) {
         return null;
     }
 }
+
+
+
+export async function checkBookingExpiryAlert(bookingId) {
+
+    const booking = await prisma.booking.findUnique({
+        where: { id: bookingId },
+        select: { endDate: true, totalPrice: true }
+    });
+
+    if (!booking) {
+        throw new Error("Booking not found");
+    }
+
+    const today = new Date();
+    const endDate = new Date(booking.endDate);
+
+    
+    const daysLeft = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+    
+    if (daysLeft <= 2 && daysLeft >= 0) {
+        return {
+            alert: true,
+            message: `Booking is ending in ${daysLeft} day(s). Total price: $${booking.totalPrice}`
+        };
+    }
+
+    return { alert: false };
+}

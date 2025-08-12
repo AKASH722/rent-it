@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TopNavigation } from "../../../components/top-navigation-props";
 import { ActionButtons } from "../components/action-button-navigation";
 import { StatusManagement } from "../components/status-management";
@@ -8,11 +8,13 @@ import { TabbedContent } from "../components/tabbed-content";
 import { DeliveryDetails } from "../components/delivery-details";
 import { ReturnDetails } from "../components/return-details";
 import { PickupModal } from "../components/pickup-modal";
+import { checkBookingExpiryAlertAction } from "../actions/rental";
 
 export function RentalOrderView({ booking }) {
   const [orderStatus, setOrderStatus] = useState(
     booking.status === "QUOTATION" ? "draft" : booking.status.toLowerCase()
   );
+  const [alertMsg, setAlertMsg] = useState("");
 
   const getRentalState = (status) => {
     switch (status) {
@@ -38,8 +40,19 @@ export function RentalOrderView({ booking }) {
     booking.paymentStatus?.toLowerCase() || "pending"
   );
   const [activeTab, setActiveTab] = useState("order-lines");
-
   const [isPickupModalOpen, setIsPickupModalOpen] = useState(false);
+
+  // 🔹 Fetch expiry alert if status is PICKEDUP or RETURNED
+  useEffect(() => {
+    if (booking.status === "PICKEDUP" ) {
+      (async () => {
+        const res = await checkBookingExpiryAlertAction(booking.id);
+        if (res.alert) {
+          setAlertMsg(res.message);
+        }
+      })();
+    }
+  }, [booking.status, booking.id]);
 
   const handleAction = (action) => {
     console.log("Action:", action);
@@ -65,6 +78,13 @@ export function RentalOrderView({ booking }) {
   return (
     <div className="min-h-screen bg-gray-50">
       <TopNavigation activeTab="rental" username="John Smith" />
+
+      {/* 🔹 Alert banner */}
+      {alertMsg && (
+        <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 p-3 mb-4 rounded-md max-w-7xl mx-auto">
+          {alertMsg}
+        </div>
+      )}
 
       <ActionButtons
         orderStatus={orderStatus}

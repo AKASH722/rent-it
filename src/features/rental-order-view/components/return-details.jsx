@@ -1,6 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { fetchPickupDateAction } from "../actions/rental";
-
 export async function ReturnDetails({
     booking,
     returnNumber = `Return/In/${booking.id}`,

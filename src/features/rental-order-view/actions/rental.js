@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getPickupDate, updateBooking } from "@/db/rentals";
+import { checkBookingExpiryAlert } from "@/db/rentals";
 import prisma from "@/lib/prisma";
 import { confirmBooking, cancelBooking } from "@/db/rentals";
 
@@ -78,3 +79,15 @@ export async function schedulePickup(bookingId, scheduledAt, pickUpAddress ) {
 export async function fetchPickupDateAction(bookingId) {
     return await getPickupDate(bookingId);
 }
+
+
+export async function checkBookingExpiryAlertAction(bookingId) {
+    try {
+        const result = await checkBookingExpiryAlert(bookingId);
+        return result;
+    } catch (error) {
+        console.error("Error in checkBookingExpiryAlertAction:", error);
+        return { alert: false, error: error.message };
+    }
+}
+
