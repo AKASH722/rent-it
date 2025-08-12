@@ -9,7 +9,6 @@ import { sendEmail } from "@/lib/brevo";
  * @returns {Promise<{success: boolean, error?: string, message?: string}>}
  */
 export async function sendMagicLink(userEmail) {
-  // 1️⃣ Find user
   const user = await prisma.user.findUnique({
     where: { email: userEmail },
   });
@@ -18,11 +17,9 @@ export async function sendMagicLink(userEmail) {
     return { success: false, error: "User not found" };
   }
 
-  // 2️⃣ Create token
   const token = crypto.randomBytes(32).toString("hex");
   const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // expires in 15 mins
 
-  // 3️⃣ Save token in DB
   await prisma.magicLinkToken.create({
     data: {
       userId: user.id,
@@ -31,10 +28,8 @@ export async function sendMagicLink(userEmail) {
     },
   });
 
-  // 4️⃣ Build magic link
   const magicLinkUrl = `${process.env.NEXT_PUBLIC_APP_URL}/magic-login?token=${token}`;
 
-  // 5️⃣ Send email
   const emailSent = await sendEmail({
     recipients: [{ email: user.email, name: user.name || "" }],
     subject: "Your Magic Login Link",

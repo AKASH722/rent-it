@@ -2,34 +2,34 @@ import prisma from "@/lib/prisma";
 import { findCurrentUser } from "@/db/user";
 
 export async function createProductRecord({
-    name,
-    description,
-    units = 1,
-    basePricePerHour = 0,
-    basePricePerDay = 0,
-    basePricePerWeek = 0,
-    LateFeePerHour,
-    categoryId = null,
-    slug,
-    imageUrl = null,
-    priceList = null,
-    attributes = []
+  name,
+  description,
+  units = 1,
+  basePricePerHour = 0,
+  basePricePerDay = 0,
+  basePricePerWeek = 0,
+  LateFeePerHour,
+  categoryId = null,
+  slug,
+  imageUrl = null,
+  priceList = null,
+  attributes = [],
 }) {
-    const user = await findCurrentUser();
+  const user = await findCurrentUser();
 
-    const productData = {
-        name,
-        imageUrl,
-        slug,
-        description,
-        units,
-        basePricePerHour,
-        basePricePerDay,
-        basePricePerWeek,
-        LateFeePerHour,
-        ownerId: user.id,
-        categoryId,
-    };
+  const productData = {
+    name,
+    imageUrl,
+    slug,
+    description,
+    units,
+    basePricePerHour,
+    basePricePerDay,
+    basePricePerWeek,
+    LateFeePerHour,
+    ownerId: user.id,
+    categoryId,
+  };
 
   if (priceList) {
     productData.PriceList = {
@@ -39,22 +39,25 @@ export async function createProductRecord({
         endDate: priceList.endDate,
         multiplier: priceList.multiplier,
         // Connect customer groups if provided
-        ...(priceList.customerGroups && priceList.customerGroups.length > 0 && {
-          customerGroup: {
-            connect: priceList.customerGroups.map(groupId => ({ id: groupId }))
-          }
-        })
-      }
+        ...(priceList.customerGroups &&
+          priceList.customerGroups.length > 0 && {
+            customerGroup: {
+              connect: priceList.customerGroups.map((groupId) => ({
+                id: groupId,
+              })),
+            },
+          }),
+      },
     };
   }
 
   // Add ProductAttributes if provided
   if (attributes && attributes.length > 0) {
     productData.ProductAttribute = {
-      create: attributes.map(attr => ({
+      create: attributes.map((attr) => ({
         key: attr.key,
-        value: attr.value
-      }))
+        value: attr.value,
+      })),
     };
   }
 
@@ -63,8 +66,8 @@ export async function createProductRecord({
     include: {
       PriceList: {
         include: {
-          customerGroup: true
-        }
+          customerGroup: true,
+        },
       },
       ProductAttribute: true,
       category: true,
@@ -72,10 +75,10 @@ export async function createProductRecord({
         select: {
           id: true,
           name: true,
-          email: true
-        }
-      }
-    }
+          email: true,
+        },
+      },
+    },
   });
 }
 export async function findProductBySlug(slug) {
@@ -92,7 +95,6 @@ export async function findProductBySlug(slug) {
     },
   });
 }
-
 
 export async function updateProduct(productId, updates) {
   if (!productId) {
@@ -117,7 +119,7 @@ export async function updateProductRecord(productId, updates) {
       ownerId: true,
       PriceList: {
         include: {
-          customerGroup: true,  // fixed here
+          customerGroup: true, // fixed here
         },
       },
     },
@@ -138,11 +140,11 @@ export async function updateProductRecord(productId, updates) {
     // Handle category connection/disconnection
     ...(categoryId
       ? {
-        category: { connect: { id: categoryId } },
-      }
+          category: { connect: { id: categoryId } },
+        }
       : {
-        category: { disconnect: true },
-      }),
+          category: { disconnect: true },
+        }),
 
     // Handle attributes - delete all and recreate
     ProductAttribute: {
@@ -222,7 +224,6 @@ export async function updateProductRecord(productId, updates) {
   });
 }
 
-
 export async function currentUserProduct() {
   const user = await findCurrentUser();
 
@@ -251,6 +252,24 @@ export async function getAllProducts() {
     },
     orderBy: { createdAt: "desc" },
   });
+}
+
+export async function getPaginatedProducts(page = 1, pageSize = 10) {
+  const skip = (page - 1) * pageSize;
+
+  return prisma.product.findMany({
+    include: {
+      category: true,
+      owner: true,
+    },
+    orderBy: { createdAt: "desc" },
+    skip,
+    take: pageSize,
+  });
+}
+
+export async function getTotalProductsCount() {
+  return prisma.product.count();
 }
 
 export async function getProductBySlug(slug) {

@@ -9,19 +9,26 @@ import Pagination from "@/components/pagination";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { wishlistUtils } from "@/features/wishlist/util";
+import { useRouter } from "next/navigation";
 
-export function DashboardClient({ products }) {
+export function DashboardClient({ products, totalProducts, page }) {
   const isMobile = useIsMobile();
   const [viewMode, setViewMode] = useState("grid");
   const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(page);
   const [sortBy, setSortBy] = useState("featured");
   const [selectedPriceRange, setSelectedPriceRange] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [wishlist, setWishlist] = useState([]);
+  const router = useRouter();
   useEffect(() => {
     setWishlist(wishlistUtils.getAll());
   }, []);
+
+  useEffect(() => {
+    router.replace(`?page=${currentPage}`);
+  }, [currentPage]);
+
   const filteredProducts = useMemo(() => {
     return products
       .filter((product) =>
@@ -64,11 +71,8 @@ export function DashboardClient({ products }) {
   ]);
 
   const itemsPerPage = 8;
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-  const paginatedProducts = filteredProducts.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const totalPages = Math.ceil(totalProducts / itemsPerPage);
+  const paginatedProducts = filteredProducts;
 
   const handleToggleWishlist = (productId) => {
     const product = products.find((p) => p.id === productId);
