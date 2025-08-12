@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { TopNavigation } from "../../../components/top-navigation-props";
+import { TopNavigation } from "@/components/top-navigation-props";
 import { ActionButtons } from "../components/action-button-navigation";
 import { StatusManagement } from "../components/status-management";
 import { OrderDetails } from "../components/order-details";
@@ -35,7 +35,9 @@ export function RentalOrderView({ booking }) {
     }
   };
 
-  const [rentalState, setRentalState] = useState(getRentalState(booking.status));
+  const [rentalState, setRentalState] = useState(
+    getRentalState(booking.status)
+  );
   const [orderState, setOrderState] = useState(
     booking.paymentStatus?.toLowerCase() || "pending"
   );
@@ -44,7 +46,7 @@ export function RentalOrderView({ booking }) {
 
   // 🔹 Fetch expiry alert if status is PICKEDUP or RETURNED
   useEffect(() => {
-    if (booking.status === "PICKEDUP" ) {
+    if (booking.status === "PICKEDUP") {
       (async () => {
         const res = await checkBookingExpiryAlertAction(booking.id);
         if (res.alert) {
@@ -81,7 +83,7 @@ export function RentalOrderView({ booking }) {
 
       {/* 🔹 Alert banner */}
       {alertMsg && (
-        <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 p-3 mb-4 rounded-md max-w-7xl mx-auto">
+        <div className="mx-auto mb-4 max-w-7xl rounded-md border border-yellow-400 bg-yellow-100 p-3 text-yellow-800">
           {alertMsg}
         </div>
       )}
@@ -92,7 +94,7 @@ export function RentalOrderView({ booking }) {
         bookingId={booking.id}
       />
 
-      <div className="flex items-center justify-between max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <StatusManagement
           orderStatus={orderStatus}
           rentalState={rentalState}
@@ -104,17 +106,14 @@ export function RentalOrderView({ booking }) {
         {booking.status === "RESERVED" && (
           <button
             onClick={() => setIsPickupModalOpen(true)}
-            className="inline-flex items-center px-4 py-2 border border-transparent 
-                       text-sm font-medium rounded-md shadow-sm text-white 
-                       bg-green-600 hover:bg-green-700 
-                       focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            className="inline-flex items-center rounded-md border border-transparent bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none"
           >
             Picker
           </button>
         )}
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <div className="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
         {rentalState === "delivery" ? (
           <DeliveryDetails booking={booking} />
         ) : rentalState === "return" ? (
@@ -131,8 +130,9 @@ export function RentalOrderView({ booking }) {
             projects={booking.product.category?.name || "N/A"}
             rentalPeriod={`${booking.startDate.toLocaleDateString()} - ${booking.endDate.toLocaleDateString()}`}
             rentalDuration={`${Math.ceil(
-              (new Date(booking.endDate).getTime() - new Date(booking.startDate).getTime()) /
-              (1000 * 60 * 60 * 24)
+              (new Date(booking.endDate).getTime() -
+                new Date(booking.startDate).getTime()) /
+                (1000 * 60 * 60 * 24)
             )} days`}
           />
         )}
