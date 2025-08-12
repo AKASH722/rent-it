@@ -2,59 +2,62 @@ import prisma from "@/lib/prisma";
 import { findCurrentUser } from "@/db/user";
 
 export async function createProductRecord({
-    name,
-    description,
-    units = 1,
-    basePricePerHour = 0,
-    basePricePerDay = 0,
-    basePricePerWeek = 0,
-    LateFeePerHour,
-    categoryId = null,
-    slug,
-    imageUrl = null,
-    priceList = null,
-    attributes = []
+  name,
+  description,
+  units = 1,
+  basePricePerHour = 0,
+  basePricePerDay = 0,
+  basePricePerWeek = 0,
+  LateFeePerHour,
+  categoryId = null,
+  slug,
+  imageUrl = null,
+  priceList = [],
+  attributes = [],
 }) {
-    const user = await findCurrentUser();
+  const user = await findCurrentUser();
 
-    const productData = {
-        name,
-        imageUrl,
-        slug,
-        description,
-        units,
-        basePricePerHour,
-        basePricePerDay,
-        basePricePerWeek,
-        LateFeePerHour,
-        ownerId: user.id,
-        categoryId,
-    };
+  const productData = {
+    name,
+    imageUrl,
+    slug,
+    description,
+    units,
+    basePricePerHour,
+    basePricePerDay,
+    basePricePerWeek,
+    LateFeePerHour,
+    ownerId: user.id,
+    categoryId,
+  };
 
-  if (priceList) {
+  console.log("Here is product data:", productData);
+  console.log("Here is price list:", priceList);
+
+  // ✅ Handle multiple PriceLists
+  if (priceList.length > 0) {
     productData.PriceList = {
-      create: {
-        name: priceList.name,
-        startDate: priceList.startDate,
-        endDate: priceList.endDate,
-        multiplier: priceList.multiplier,
-        // Connect customer groups if provided
-        ...(priceList.customerGroups && priceList.customerGroups.length > 0 && {
+      create: priceList.map((pl) => ({
+        name: pl.name,
+        startDate: pl.startDate,
+        endDate: pl.endDate,
+        multiplier: pl.multiplier,
+        ...(pl.customerGroups && pl.customerGroups.length > 0 && {
           customerGroup: {
-            connect: priceList.customerGroups.map(groupId => ({ id: groupId }))
-          }
-        })
-      }
+            connect: pl.customerGroups.map((groupId) => ({ id: groupId })),
+          },
+        }),
+      })),
     };
   }
 
-  // Add ProductAttributes if provided
-  if (attributes && attributes.length > 0) {
+  // ✅ Handle ProductAttributes
+  if (attributes.length > 0) {
     productData.ProductAttribute = {
-      create: attributes.map(attr => ({
+      create: attributes.map((attr) => ({
         key: attr.key,
-        value: attr.value
-      }))
+        value: attr.value,
+      })),
     };
   }
 
@@ -63,8 +66,8 @@ export async function createProductRecord({
     include: {
       PriceList: {
         include: {
-          customerGroup: true
-        }
+          customerGroup: true,
+        },
       },
       ProductAttribute: true,
       category: true,
@@ -72,12 +75,13 @@ export async function createProductRecord({
         select: {
           id: true,
           name: true,
-          email: true
-        }
-      }
-    }
+          email: true,
+        },
+      },
+    },
   });
 }
+
 export async function findProductBySlug(slug) {
   if (!slug) {
     throw new Error("Slug is required");
