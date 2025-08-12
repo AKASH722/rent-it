@@ -61,7 +61,10 @@ export function SignupForm() {
     console.log(values);
     const { success, error } = await signupUser(values);
     if (success) {
-      toast.success("SignUp successfully, please login to continue!");
+      toast.success(
+        "SignUp successfully, please verify your email to continue!"
+      );
+      toast.info("A verification link has been sent to your email!");
       form.reset();
       router.push("/login");
     } else {

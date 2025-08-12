@@ -28,23 +28,24 @@ enum PAYMENT_STATUS {
 }
 
 model User {
-  id              String  @id @default(cuid())
+  id              String   @id @default(cuid())
   name            String?
-  email           String  @unique
+  email           String   @unique
   phone           String?
   password        String
-  role            ROLE    @default(CUSTOMER)
+  role            ROLE     @default(CUSTOMER)
   billingAddress  String?
   deliveryAddress String?
   customerGroupId String?
+  emailVerified   Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  UserGroup    CustomerGroup? @relation(fields: [customerGroupId], references: [id])
-  Product      Product[]
-  Booking      Booking[]
-  Notification Notification[]
+  UserGroup      CustomerGroup?   @relation(fields: [customerGroupId], references: [id])
+  Product        Product[]
+  Booking        Booking[]
+  Notification   Notification[]
+  MagicLinkToken MagicLinkToken[]
 }
 
 model CustomerGroup {
@@ -209,4 +210,17 @@ model ProductAttribute {
   updatedAt DateTime @updatedAt
 
   product Product @relation(fields: [productId], references: [id])
+}
+
+model MagicLinkToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

@@ -8,7 +8,7 @@ export default auth((req) => {
   const isOnEndUser = nextUrl.pathname.startsWith("/store");
   const isOnAuth = nextUrl.pathname === "/auth";
 
-  const publicRoutes = ["/", "/auth"];
+  const publicRoutes = ["/", "/auth", "/magic-login"];
   const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
 
   const isProtected = !isPublicRoute;

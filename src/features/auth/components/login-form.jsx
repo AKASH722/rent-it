@@ -29,7 +29,8 @@ export function LoginForm() {
 
   async function onSubmit(values) {
     try {
-      await signIn("credentials", values);
+      const res = await signIn("credentials", values);
+      console.log(res);
       toast.success("Login successful");
     } catch (error) {
       toast.error(error.message);

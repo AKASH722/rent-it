@@ -87,8 +87,6 @@ export function BookingsTable({ bookings }) {
     }
   };
 
-  console.log(bookings);
-
   return (
     <>
       <Script src="https://checkout.razorpay.com/v1/checkout.js" />

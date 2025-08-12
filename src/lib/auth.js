@@ -23,6 +23,10 @@ export const authConfig = {
           throw new Error("User not found");
         }
 
+        if (!user.emailVerified) {
+          throw new Error("User email not verified");
+        }
+
         const isValid = await bcrypt.compare(
           credentials.password,
           user.password
