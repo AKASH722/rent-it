@@ -10,7 +10,7 @@ export async function RentalOrders() {
     createdBy: b.product?.owner?.name || "Unknown",
     rentalStatus: b.status?.toLowerCase() || "unknown",
     invoiceStatus: b.Invoice?.length > 0 ? "fully-invoiced" : "to-invoice",
-    total: b.totalPrice ?? 0,
+    total: b.totalPrice.toFixed(2) ?? 0,
     startDate: b.startDate?.toISOString?.() || "",
     endDate: b.endDate?.toISOString?.() || "",
   }));

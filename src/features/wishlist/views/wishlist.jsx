@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Heart, ShoppingCart, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
 import { toast } from "sonner";
 import { wishlistUtils } from "@/features/wishlist/util";
 import Link from "next/link";
@@ -71,22 +70,18 @@ export function WishlistPage() {
                   className="bg-card border-border rounded-xl border p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
                 >
                   {/* Product Image */}
-                  <div className="bg-muted mb-4 aspect-square overflow-hidden rounded-lg">
-                    {item.image ? (
-                      <Image
-                        src={item.image}
+
+                  <div className="bg-muted relative mb-4 flex h-48 items-center justify-center overflow-hidden">
+                    {item.imageUrl ? (
+                      <img
+                        src={item.imageUrl}
                         alt={item.name}
-                        width={200}
-                        height={200}
                         className="h-full w-full object-cover"
                       />
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center">
-                        <span className="text-muted-foreground text-sm">
-                          No Image
-                        </span>
-                      </div>
+                      <span className="text-muted-foreground">No Image</span>
                     )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
                   </div>
 
                   {/* Product Info */}
