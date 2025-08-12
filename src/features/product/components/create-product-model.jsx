@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -8,12 +8,34 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { X, Plus, Calendar, AlertTriangle } from "lucide-react"
-import { createProduct } from "../actions/create-product"
+import { X, Plus, Calendar, AlertTriangle, Trash2 } from "lucide-react"
+import { createProduct, getCustomerGroups } from "../actions/create-product"
 import { uploadImageAction } from "../actions/upload-image"
 import { toast } from "sonner"
 
-export default function CreateProductModal({ isOpen, onClose, categories, customerGroups = [] }) {
+export default function CreateProductModal({ isOpen, onClose, categories }) {
+    const [customerGroups, setCustomerGroups] = useState([])
+    const [isLoadingCustomerGroups, setIsLoadingCustomerGroups] = useState(false)
+    useEffect(() => {
+        const fetchCustomerGroups = async () => {
+            if (isOpen) {
+                setIsLoadingCustomerGroups(true)
+                try {
+                    const groups = await getCustomerGroups()
+                    console.log(groups)
+                    setCustomerGroups(groups || [])
+                } catch (error) {
+                    console.error("Failed to fetch customer groups:", error)
+                    toast.error("Failed to load customer groups")
+                    setCustomerGroups([])
+                } finally {
+                    setIsLoadingCustomerGroups(false)
+                }
+            }
+        }
+
+        fetchCustomerGroups()
+    }, [isOpen])
     const [formData, setFormData] = useState({
         name: "",
         description: "",
@@ -31,16 +53,13 @@ export default function CreateProductModal({ isOpen, onClose, categories, custom
         week: false
     })
     const [attributes, setAttributes] = useState([{ key: "", value: "" }])
-    const [priceList, setPriceList] = useState({
-        name: "",
-        startDate: "",
-        endDate: "",
-        multiplier: "",
-        customerGroups: []
-    })
+
+    // Changed from single priceList to array of priceLists
+    const [priceLists, setPriceLists] = useState([])
+
     const [imagePreview, setImagePreview] = useState(null)
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const [showPriceList, setShowPriceList] = useState(false)
+    const [showPriceLists, setShowPriceLists] = useState(false)
     const [dateErrors, setDateErrors] = useState({})
 
     // Helper function to get today's date in YYYY-MM-DD format
@@ -48,27 +67,14 @@ export default function CreateProductModal({ isOpen, onClose, categories, custom
         return new Date().toISOString().split('T')[0]
     }
 
-    // Helper function to format date for input (ensures local timezone)
-    const formatDateForInput = (date) => {
-        if (!date) return ""
-        const d = new Date(date)
-        if (isNaN(d.getTime())) return ""
-
-        // Use local timezone to avoid timezone shift issues
-        const year = d.getFullYear()
-        const month = String(d.getMonth() + 1).padStart(2, '0')
-        const day = String(d.getDate()).padStart(2, '0')
-        return `${year}-${month}-${day}`
-    }
-
-    // Helper function to validate date ranges
-    const validateDateRange = (startDate, endDate) => {
+    // Helper function to validate date ranges for a specific price list
+    const validatePriceListDateRange = (priceList, allPriceLists = [], currentIndex = -1) => {
         const errors = {}
         const today = new Date()
-        today.setHours(0, 0, 0, 0) // Reset time for accurate comparison
+        today.setHours(0, 0, 0, 0)
 
-        if (startDate) {
-            const start = new Date(startDate)
+        if (priceList.startDate) {
+            const start = new Date(priceList.startDate)
             start.setHours(0, 0, 0, 0)
 
             // Check if start date is in the past
@@ -77,36 +83,63 @@ export default function CreateProductModal({ isOpen, onClose, categories, custom
             }
         }
 
-        if (startDate && endDate) {
-            const start = new Date(startDate)
-            const end = new Date(endDate)
+        if (priceList.startDate && priceList.endDate) {
+            const start = new Date(priceList.startDate)
+            const end = new Date(priceList.endDate)
 
-            // Check if dates are valid
             if (isNaN(start.getTime()) || isNaN(end.getTime())) {
                 errors.dateFormat = "Invalid date format"
             } else {
                 start.setHours(0, 0, 0, 0)
                 end.setHours(0, 0, 0, 0)
 
-                // Check if end date is before start date
                 if (end < start) {
                     errors.endDate = "End date cannot be before start date"
                 }
 
-                // Check for minimum duration (at least 1 day)
                 if (end.getTime() === start.getTime()) {
                     errors.duration = "Price list must be active for at least 1 day"
                 }
 
-                // Optional: Check for maximum duration (e.g., 2 years)
-                const maxDuration = 2 * 365 * 24 * 60 * 60 * 1000 // 2 years in milliseconds
+                const maxDuration = 2 * 365 * 24 * 60 * 60 * 1000
                 if (end.getTime() - start.getTime() > maxDuration) {
                     errors.duration = "Price list duration cannot exceed 2 years"
+                }
+
+                // Check for date overlaps with other price lists (excluding current one)
+                const otherPriceLists = allPriceLists.filter((_, index) => index !== currentIndex)
+                for (let i = 0; i < otherPriceLists.length; i++) {
+                    const other = otherPriceLists[i]
+                    if (other.startDate && other.endDate) {
+                        const otherStart = new Date(other.startDate)
+                        const otherEnd = new Date(other.endDate)
+                        otherStart.setHours(0, 0, 0, 0)
+                        otherEnd.setHours(0, 0, 0, 0)
+
+                        // Check if dates overlap
+                        if (start <= otherEnd && end >= otherStart) {
+                            errors.overlap = `Date range overlaps with "${other.name || `Price List ${i + 1}`}"`
+                            break
+                        }
+                    }
                 }
             }
         }
 
         return errors
+    }
+
+    // Validate all price lists for errors
+    const validateAllPriceLists = () => {
+        const allErrors = {}
+        priceLists.forEach((priceList, index) => {
+            const errors = validatePriceListDateRange(priceList, priceLists, index)
+            if (Object.keys(errors).length > 0) {
+                allErrors[index] = errors
+            }
+        })
+        setDateErrors(allErrors)
+        return Object.keys(allErrors).length === 0
     }
 
     const handleInputChange = (field, value) => {
@@ -122,7 +155,6 @@ export default function CreateProductModal({ isOpen, onClose, categories, custom
             [type]: checked
         }))
 
-        // Clear the price if unchecked
         if (!checked) {
             const priceField = `basePricePer${type.charAt(0).toUpperCase() + type.slice(1)}`
             handleInputChange(priceField, "")
@@ -134,7 +166,6 @@ export default function CreateProductModal({ isOpen, onClose, categories, custom
         if (file) {
             setFormData(prev => ({ ...prev, image: file }))
 
-            // Create preview
             const reader = new FileReader()
             reader.onload = (e) => setImagePreview(e.target.result)
             reader.readAsDataURL(file)
@@ -156,31 +187,68 @@ export default function CreateProductModal({ isOpen, onClose, categories, custom
         setAttributes(updated)
     }
 
-    // Enhanced PriceList functions with date validation
-    const updatePriceList = (field, value) => {
-        setPriceList(prev => {
-            const updated = { ...prev, [field]: value }
-
-            // Validate dates when either start or end date changes
-            if (field === 'startDate' || field === 'endDate') {
-                const errors = validateDateRange(
-                    field === 'startDate' ? value : prev.startDate,
-                    field === 'endDate' ? value : prev.endDate
-                )
-                setDateErrors(errors)
-            }
-
-            return updated
-        })
+    // Price List Management Functions
+    const addPriceList = () => {
+        const newPriceList = {
+            name: "",
+            startDate: "",
+            endDate: "",
+            multiplier: "",
+            customerGroups: []
+        }
+        setPriceLists([...priceLists, newPriceList])
+        setShowPriceLists(true)
     }
 
-    const updatePriceListCustomerGroups = (customerGroupId, checked) => {
-        setPriceList(prev => ({
-            ...prev,
-            customerGroups: checked
-                ? [...prev.customerGroups, customerGroupId]
-                : prev.customerGroups.filter(id => id !== customerGroupId)
-        }))
+    const removePriceList = (index) => {
+        const updated = priceLists.filter((_, i) => i !== index)
+        setPriceLists(updated)
+
+        // Clean up errors for removed price list
+        const updatedErrors = { ...dateErrors }
+        delete updatedErrors[index]
+
+        // Reindex remaining errors
+        const reindexedErrors = {}
+        Object.keys(updatedErrors).forEach(key => {
+            const numKey = parseInt(key)
+            if (numKey > index) {
+                reindexedErrors[numKey - 1] = updatedErrors[key]
+            } else {
+                reindexedErrors[key] = updatedErrors[key]
+            }
+        })
+        setDateErrors(reindexedErrors)
+
+        if (updated.length === 0) {
+            setShowPriceLists(false)
+        }
+    }
+
+    const updatePriceList = (index, field, value) => {
+        const updated = priceLists.map((priceList, i) =>
+            i === index ? { ...priceList, [field]: value } : priceList
+        )
+        setPriceLists(updated)
+
+        // Validate on date changes
+        if (field === 'startDate' || field === 'endDate') {
+            setTimeout(() => validateAllPriceLists(), 100)
+        }
+    }
+
+    const updatePriceListCustomerGroups = (index, customerGroupId, checked) => {
+        const updated = priceLists.map((priceList, i) =>
+            i === index
+                ? {
+                    ...priceList,
+                    customerGroups: checked
+                        ? [...priceList.customerGroups, customerGroupId]
+                        : priceList.customerGroups.filter(id => id !== customerGroupId)
+                }
+                : priceList
+        )
+        setPriceLists(updated)
     }
 
     const resetForm = () => {
@@ -201,16 +269,10 @@ export default function CreateProductModal({ isOpen, onClose, categories, custom
             week: false
         })
         setAttributes([{ key: "", value: "" }])
-        setPriceList({
-            name: "",
-            startDate: "",
-            endDate: "",
-            multiplier: "",
-            customerGroups: []
-        })
+        setPriceLists([])
         setImagePreview(null)
         setIsSubmitting(false)
-        setShowPriceList(false)
+        setShowPriceLists(false)
         setDateErrors({})
     }
 
@@ -225,94 +287,133 @@ export default function CreateProductModal({ isOpen, onClose, categories, custom
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault()
-        setIsSubmitting(true)
+        e.preventDefault();
+        setIsSubmitting(true);
 
         try {
-            // Validate price list dates if provided
-            if (showPriceList && (priceList.name || priceList.startDate || priceList.endDate || priceList.multiplier)) {
-                const errors = validateDateRange(priceList.startDate, priceList.endDate)
-                if (Object.keys(errors).length > 0) {
-                    setDateErrors(errors)
-                    setIsSubmitting(false)
-                    toast.error("Please fix the date errors before submitting")
-                    return
+            // ✅ Validate form fields
+            if (!formData.name.trim()) {
+                toast.error("Product name is required");
+                setIsSubmitting(false);
+                return;
+            }
+
+            if (!formData.LateFeePerHour || parseFloat(formData.LateFeePerHour) < 0) {
+                toast.error("Late fee per hour is required and must be 0 or greater");
+                setIsSubmitting(false);
+                return;
+            }
+
+            // ✅ Check if at least one pricing option is selected
+            if (!isPricingSelected) {
+                toast.error("Please select at least one pricing option");
+                setIsSubmitting(false);
+                return;
+            }
+
+            // ✅ Validate price lists if any exist
+            if (priceLists.length > 0) {
+                const isValid = validateAllPriceLists();
+                if (!isValid) {
+                    setIsSubmitting(false);
+                    toast.error("Please fix the date errors before submitting");
+                    return;
                 }
 
-                // Ensure all required price list fields are provided
-                if (!priceList.name || !priceList.startDate || !priceList.endDate || !priceList.multiplier) {
-                    toast.error("Please fill in all price list fields or remove the price list")
-                    setIsSubmitting(false)
-                    return
+                // Ensure all price lists have required fields
+                for (let i = 0; i < priceLists.length; i++) {
+                    const pl = priceLists[i];
+                    if (!pl.name || !pl.startDate || !pl.endDate || !pl.multiplier) {
+                        toast.error(`Please fill in all fields for Price List ${i + 1} or remove it`);
+                        setIsSubmitting(false);
+                        return;
+                    }
+
+                    // Validate multiplier is a positive number
+                    const multiplier = parseFloat(pl.multiplier);
+                    if (isNaN(multiplier) || multiplier <= 0) {
+                        toast.error(`Multiplier for Price List ${i + 1} must be a positive number`);
+                        setIsSubmitting(false);
+                        return;
+                    }
                 }
             }
 
-            // Upload image if provided
-            let imageUrl = null
+            // ✅ Upload image if provided
+            let imageUrl = null;
             if (formData.image) {
-                imageUrl = await uploadImage(formData.image)
+                imageUrl = await uploadImage(formData.image);
             }
 
-            // Prepare data for createProduct
-            const productData = {
-                name: formData.name,
-                description: formData.description,
-                units: parseInt(formData.units),
+            // ✅ Prepare payload for backend - matching backend parameter names exactly
+            const payload = {
+                name: formData.name.trim(),
+                description: formData.description.trim() || null,
+                units: parseInt(formData.units) || 1,
                 LateFeePerHour: parseFloat(formData.LateFeePerHour),
                 imageUrl,
-                categoryId: formData.categoryId || null
-            }
+                categoryId: formData.categoryId || null,
+                slug: formData.name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""),
+                // ✅ Filter out empty attributes and match backend expectations
+                attributes: attributes.filter(attr => attr.key.trim() && attr.value.trim()),
+                // ✅ Format price lists to match backend expectations
+                priceList: priceLists.map(pl => ({
+                    name: pl.name.trim(),
+                    startDate: new Date(pl.startDate + "T00:00:00.000Z"),
+                    endDate: new Date(pl.endDate + "T23:59:59.999Z"),
+                    multiplier: parseFloat(pl.multiplier),
+                    customerGroups: pl.customerGroups || []
+                }))
+            };
 
-            // Add pricing data based on selected types
+            // ✅ Add pricing data only for selected options with valid values
             if (pricingTypes.hour && formData.basePricePerHour) {
-                productData.basePricePerHour = parseFloat(formData.basePricePerHour)
+                const hourlyPrice = parseFloat(formData.basePricePerHour);
+                if (!isNaN(hourlyPrice) && hourlyPrice >= 0) {
+                    payload.basePricePerHour = hourlyPrice;
+                }
             }
             if (pricingTypes.day && formData.basePricePerDay) {
-                productData.basePricePerDay = parseFloat(formData.basePricePerDay)
+                const dailyPrice = parseFloat(formData.basePricePerDay);
+                if (!isNaN(dailyPrice) && dailyPrice >= 0) {
+                    payload.basePricePerDay = dailyPrice;
+                }
             }
             if (pricingTypes.week && formData.basePricePerWeek) {
-                productData.basePricePerWeek = parseFloat(formData.basePricePerWeek)
-            }
-
-            // Prepare attributes
-            const validAttributes = attributes.filter(attr => attr.key && attr.value)
-            if (validAttributes.length > 0) {
-                productData.attributes = validAttributes
-            }
-
-            // Prepare price list with proper date handling
-            if (priceList.name && priceList.startDate && priceList.endDate && priceList.multiplier) {
-                // Create dates with proper timezone handling
-                const startDate = new Date(priceList.startDate + 'T00:00:00.000Z')
-                const endDate = new Date(priceList.endDate + 'T23:59:59.999Z')
-
-                productData.priceList = {
-                    name: priceList.name,
-                    startDate: startDate,
-                    endDate: endDate,
-                    multiplier: parseFloat(priceList.multiplier),
-                    customerGroups: priceList.customerGroups
+                const weeklyPrice = parseFloat(formData.basePricePerWeek);
+                if (!isNaN(weeklyPrice) && weeklyPrice >= 0) {
+                    payload.basePricePerWeek = weeklyPrice;
                 }
             }
 
-            // Call your createProduct method
-            const result = await createProduct(productData)
+            // ✅ Set default values for unselected pricing types
+            if (!payload.basePricePerHour) payload.basePricePerHour = 0;
+            if (!payload.basePricePerDay) payload.basePricePerDay = 0;
+            if (!payload.basePricePerWeek) payload.basePricePerWeek = 0;
 
-            console.log('Product created successfully:', result)
+            console.log("Payload to backend:", payload);
 
-            resetForm()
-            onClose()
+            // ✅ Call server action (should now call createProductRecord internally)
+            const result = await createProduct(payload);
 
-            toast.success('Product created successfully!')
-            window.location.reload()
+            console.log("Product created:", result);
+            resetForm();
+            onClose();
+            toast.success("Product created successfully!");
+
+            // Optional: Instead of full reload, you could emit an event or call a refresh function
+            if (typeof window !== 'undefined') {
+                window.location.reload();
+            }
 
         } catch (error) {
-            console.error('Failed to create product:', error)
-            toast.error('Failed to create product: ' + error.message)
+            console.error("Failed to create product:", error);
+            const errorMessage = error.message || "Unknown error occurred";
+            toast.error("Failed to create product: " + errorMessage);
         } finally {
-            setIsSubmitting(false)
+            setIsSubmitting(false);
         }
-    }
+    };
 
     const handleClose = () => {
         resetForm()
@@ -349,7 +450,7 @@ export default function CreateProductModal({ isOpen, onClose, categories, custom
                                 type="number"
                                 min="1"
                                 value={formData.units}
-                                onChange={(e) => handleInputChange("units", parseInt(e.target.value))}
+                                onChange={(e) => handleInputChange("units", parseInt(e.target.value) || 1)}
                                 required
                             />
                         </div>
@@ -472,126 +573,161 @@ export default function CreateProductModal({ isOpen, onClose, categories, custom
                         )}
                     </div>
 
-                    {/* Dynamic Price List with Enhanced Date Validation */}
+                    {/* Multiple Dynamic Price Lists */}
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
-                            <Label>Dynamic Price List (Optional)</Label>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setShowPriceList(!showPriceList)}
-                                className="flex items-center gap-1"
-                            >
-                                <Calendar className="w-4 h-4" />
-                                {showPriceList ? 'Hide' : 'Add'} Price List
-                            </Button>
+                            <Label>Dynamic Price Lists (Optional)</Label>
+                            <div className="flex gap-2">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={addPriceList}
+                                    className="flex items-center gap-1"
+                                >
+                                    <Plus className="w-4 h-4" />
+                                    Add Price List
+                                </Button>
+                                {priceLists.length > 0 && (
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setShowPriceLists(!showPriceLists)}
+                                        className="flex items-center gap-1"
+                                    >
+                                        <Calendar className="w-4 h-4" />
+                                        {showPriceLists ? 'Hide' : 'Show'} Price Lists ({priceLists.length})
+                                    </Button>
+                                )}
+                            </div>
                         </div>
 
-                        {showPriceList && (
+                        {showPriceLists && priceLists.length > 0 && (
                             <div className="space-y-4">
                                 <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-md">
-                                    Price list allows you to set different pricing during a specific date range using a multiplier.
-                                    For example: 1.2 = 20% increase, 0.8 = 20% discount.
+                                    Price lists allow you to set different pricing during specific date ranges using multipliers.
+                                    Each price list will be applied during its date range. Make sure date ranges don't overlap.
                                 </div>
 
-                                {/* Date Error Display */}
+                                {/* Global Date Error Display */}
                                 {hasDateErrors && (
                                     <div className="bg-red-50 border border-red-200 rounded-md p-3">
                                         <div className="flex items-center gap-2 text-red-800">
                                             <AlertTriangle className="w-4 h-4" />
-                                            <span className="font-medium">Date Validation Errors:</span>
+                                            <span className="font-medium">Price List Validation Errors:</span>
                                         </div>
-                                        <ul className="mt-2 text-sm text-red-700 list-disc list-inside">
-                                            {Object.entries(dateErrors).map(([key, error]) => (
-                                                <li key={key}>{error}</li>
+                                        <div className="mt-2 text-sm text-red-700 space-y-1">
+                                            {Object.entries(dateErrors).map(([index, errors]) => (
+                                                <div key={index}>
+                                                    <strong>Price List {parseInt(index) + 1}:</strong>
+                                                    <ul className="list-disc list-inside ml-4">
+                                                        {Object.entries(errors).map(([key, error]) => (
+                                                            <li key={key}>{error}</li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
                                             ))}
-                                        </ul>
+                                        </div>
                                     </div>
                                 )}
 
-                                <Card className="p-4">
-                                    <CardHeader className="p-0 pb-3">
-                                        <CardTitle className="text-lg">Price List Configuration</CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="p-0 space-y-4">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <Label>Price List Name</Label>
-                                                <Input
-                                                    placeholder="e.g., Summer Sale, Holiday Pricing"
-                                                    value={priceList.name}
-                                                    onChange={(e) => updatePriceList("name", e.target.value)}
-                                                />
+                                {priceLists.map((priceList, index) => (
+                                    <Card key={index} className="p-4">
+                                        <CardHeader className="p-0 pb-3">
+                                            <div className="flex items-center justify-between">
+                                                <CardTitle className="text-lg">Price List {index + 1}</CardTitle>
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => removePriceList(index)}
+                                                    className="text-red-600 hover:text-red-700"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </Button>
                                             </div>
-                                            <div className="space-y-2">
-                                                <Label>Multiplier</Label>
-                                                <Input
-                                                    type="number"
-                                                    step="0.01"
-                                                    min="0"
-                                                    placeholder="1.0 (no change)"
-                                                    value={priceList.multiplier}
-                                                    onChange={(e) => updatePriceList("multiplier", e.target.value)}
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <Label>Start Date</Label>
-                                                <Input
-                                                    type="date"
-                                                    min={getTodayString()}
-                                                    value={priceList.startDate}
-                                                    onChange={(e) => updatePriceList("startDate", e.target.value)}
-                                                    className={dateErrors.startDate ? "border-red-500" : ""}
-                                                />
-                                                {dateErrors.startDate && (
-                                                    <p className="text-sm text-red-500">{dateErrors.startDate}</p>
-                                                )}
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label>End Date</Label>
-                                                <Input
-                                                    type="date"
-                                                    min={priceList.startDate || getTodayString()}
-                                                    value={priceList.endDate}
-                                                    onChange={(e) => updatePriceList("endDate", e.target.value)}
-                                                    className={dateErrors.endDate ? "border-red-500" : ""}
-                                                />
-                                                {dateErrors.endDate && (
-                                                    <p className="text-sm text-red-500">{dateErrors.endDate}</p>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        {customerGroups.length > 0 && (
-                                            <div className="space-y-2">
-                                                <Label>Customer Groups (Optional)</Label>
-                                                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                                                    {customerGroups.map((group) => (
-                                                        <div key={group.id} className="flex items-center space-x-2">
-                                                            <Checkbox
-                                                                id={`priceList-group-${group.id}`}
-                                                                checked={priceList.customerGroups.includes(group.id)}
-                                                                onCheckedChange={(checked) =>
-                                                                    updatePriceListCustomerGroups(group.id, checked)
-                                                                }
-                                                            />
-                                                            <Label
-                                                                htmlFor={`priceList-group-${group.id}`}
-                                                                className="text-sm"
-                                                            >
-                                                                {group.name}
-                                                            </Label>
-                                                        </div>
-                                                    ))}
+                                        </CardHeader>
+                                        <CardContent className="p-0 space-y-4">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <Label>Price List Name *</Label>
+                                                    <Input
+                                                        placeholder="e.g., Summer Sale, Holiday Pricing"
+                                                        value={priceList.name}
+                                                        onChange={(e) => updatePriceList(index, "name", e.target.value)}
+                                                        required={priceLists.length > 0}
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label>Multiplier *</Label>
+                                                    <Input
+                                                        type="number"
+                                                        step="0.01"
+                                                        min="0.01"
+                                                        placeholder="1.0 (no change), 1.5 (+50%), 0.8 (-20%)"
+                                                        value={priceList.multiplier}
+                                                        onChange={(e) => updatePriceList(index, "multiplier", e.target.value)}
+                                                        required={priceLists.length > 0}
+                                                    />
                                                 </div>
                                             </div>
-                                        )}
-                                    </CardContent>
-                                </Card>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <Label>Start Date *</Label>
+                                                    <Input
+                                                        type="date"
+                                                        min={getTodayString()}
+                                                        value={priceList.startDate}
+                                                        onChange={(e) => updatePriceList(index, "startDate", e.target.value)}
+                                                        className={dateErrors[index]?.startDate ? "border-red-500" : ""}
+                                                        required={priceLists.length > 0}
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label>End Date *</Label>
+                                                    <Input
+                                                        type="date"
+                                                        min={priceList.startDate || getTodayString()}
+                                                        value={priceList.endDate}
+                                                        onChange={(e) => updatePriceList(index, "endDate", e.target.value)}
+                                                        className={dateErrors[index]?.endDate ? "border-red-500" : ""}
+                                                        required={priceLists.length > 0}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            {customerGroups.length > 0 && (
+                                                <div className="space-y-2">
+                                                    <Label>Customer Groups (Optional)</Label>
+                                                    <div className="text-xs text-gray-500 mb-2">
+                                                        If no groups are selected, this price list will apply to all customers
+                                                    </div>
+                                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                                        {customerGroups.map((group) => (
+                                                            <div key={group.id} className="flex items-center space-x-2">
+                                                                <Checkbox
+                                                                    id={`priceList-${index}-group-${group.id}`}
+                                                                    checked={priceList.customerGroups.includes(group.id)}
+                                                                    onCheckedChange={(checked) =>
+                                                                        updatePriceListCustomerGroups(index, group.id, checked)
+                                                                    }
+                                                                />
+                                                                <Label
+                                                                    htmlFor={`priceList-${index}-group-${group.id}`}
+                                                                    className="text-sm"
+                                                                >
+                                                                    {group.name}
+                                                                </Label>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                ))}
                             </div>
                         )}
                     </div>

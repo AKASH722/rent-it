@@ -44,7 +44,7 @@ export async function createProduct({
     LateFeePerHour,
     imageUrl = null,
     categoryId = null,
-    priceList = null,
+    priceList = [],
     attributes = []
 }) {
     if (!name) throw new Error("Product name is required");
@@ -87,3 +87,7 @@ export async function updateProduct(productId, updates) {
 
 
 
+
+export async function getCustomerGroups() {
+    return await prisma.customerGroup.findMany({})
+}
