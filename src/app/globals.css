@@ -189,3 +189,13 @@
     letter-spacing: var(--tracking-normal);
     }
 }
+
+
+@media print {
+
+    button,
+    nav,
+    .no-print {
+        display: none !important;
+    }
+}
